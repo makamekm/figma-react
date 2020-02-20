@@ -20,6 +20,7 @@ const { stylePlugins } = require('./figma.style.plugins');
 // - imports // default ['import { observer } from 'mobx-react';']
 // - decorator // default 'observer'
 // - typeFactory // default ({ props: componentProps }) => `{ ${Object.keys(componentProps).map(key => `${key}: ${componentProps[key] || 'any'};\n`).join('')} }`
+// - prettierOptions // default see in .prettierrc
 
 function getConfig(options = {}) {
   let fileKey = options.fileKey || process.argv[2] || process.env.FIGMA_FILE_KEY;
@@ -40,6 +41,17 @@ function getConfig(options = {}) {
 
   if (!options.stylePlugins) {
     options.stylePlugins = stylePlugins;
+  }
+
+  if (!options.prettierOptions) {
+    options.prettierOptions = {
+      parser: 'babel',
+      semi: true,
+      tabWidth: 2,
+      printWidth: 140,
+      singleQuote: true,
+      trailingComma: 'none'
+    };
   }
 
   return {

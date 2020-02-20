@@ -9,5 +9,5 @@ figmaReact.runFigmaReact().catch(err => {
 });
 
 module.exports = {
-  ...figmaReact,
+  ...figmaReact
 };

@@ -286,8 +286,13 @@ function createNodeBounds(node, parent, notFirst) {
     const py = parentBounds.y;
 
     return {
-      xCenter: ((px + parentBounds.width - nx2) - (nodeBounds.x - px)) / 2,
-      yCenter: ((py + parentBounds.height - ny2) - (notFirst && parent.absoluteBoundingBox ? nodeBounds.y - (parentBounds.y + parentBounds.height) : nodeBounds.y - py)) / 2,
+      xCenter: (px + parentBounds.width - nx2 - (nodeBounds.x - px)) / 2,
+      yCenter:
+        (py +
+          parentBounds.height -
+          ny2 -
+          (notFirst && parent.absoluteBoundingBox ? nodeBounds.y - (parentBounds.y + parentBounds.height) : nodeBounds.y - py)) /
+        2,
       left: nodeBounds.x - px,
       right: px + parentBounds.width - nx2,
       top: notFirst && parent.absoluteBoundingBox ? nodeBounds.y - (parentBounds.y + parentBounds.height) : nodeBounds.y - py,
@@ -549,13 +554,13 @@ function preprocessCanvasComponents(canvas, shared) {
   }
 }
 
-function writeFile(path, contents) {
+function writeFile(path, contents, options = {}) {
   new Promise((r, e) =>
-    prettier.resolveConfig('./.prettierrc').then(options => {
+    prettier.resolveConfig('./.prettierrc').then(prettierOptions => {
       try {
-        fs.writeFileSync(path, prettier.format(contents, options));
+        fs.writeFileSync(path, prettier.format(contents, prettierOptions || options.prettierOptions));
         console.log(`wrote ${path}`);
-        r()
+        r();
       } catch (err) {
         console.error(err);
         e(err);
@@ -649,13 +654,13 @@ async function createComponent(component, imgMap, componentMap, componentDescrip
   const typeFactory = options.typeFactory || typeFactoryDefault;
   preprint(
     `export const ${instance}: React.FC<${typeFactory(shared)}> = ${decorator}(props => { ${
-    Object.keys(props).length ? `const { ${Object.keys(props).join(', ')} } = props;` : ''
+      Object.keys(props).length ? `const { ${Object.keys(props).join(', ')} } = props;` : ''
     }`
   ); // Can be replaced with React.memo(...)
 
   // Render additional styles
 
-  additionalStyles.forEach(s => styles += `\n${s}`);
+  additionalStyles.forEach(s => (styles += `\n${s}`));
 
   // Collect styles from component description
 
@@ -707,7 +712,7 @@ async function generateComponentFile({ path, instance, fileName, name }, options
     componentSrc += `export const ${name} = ${decorator}(props => {\n`;
     componentSrc += `return <${instance} {...props} />;\n`;
     componentSrc += `});\n`;
-    await writeFile(path, componentSrc);
+    await writeFile(path, componentSrc, options);
   }
 }
 
@@ -733,5 +738,5 @@ async function generateComponent(component, options) {
   contents += component.doc;
 
   // Write the final result
-  await writeFile(path, contents);
+  await writeFile(path, contents, options);
 }

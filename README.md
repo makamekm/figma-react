@@ -57,6 +57,17 @@ figmaReact.runFigmaReact(options).catch(err => {
 - imports // default ['import { observer } from 'mobx-react';']
 - decorator // default 'observer'
 - typeFactory // default ({ props: componentProps }) => `string`
+- prettierOptions // default
+```
+{
+  "parser": "babel",
+  "semi": true,
+  "tabWidth": 2,
+  "printWidth": 140,
+  "singleQuote": true,
+  "trailingComma": "none"
+}
+```
 
 
 ### Development

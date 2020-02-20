@@ -17,6 +17,9 @@
   ],
   "license": "MIT",
   "main": "figma.js",
+  "scripts": {
+    "format": "prettier --write \"**/*.js\""
+  },
   "bin": {
     "figma-react": "./figma.cli.js"
   },

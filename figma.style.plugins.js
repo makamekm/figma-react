@@ -10,7 +10,15 @@ const {
   applyFontStyle
 } = require('./figma.lib');
 
-const stylePlugins = [setMiddleOrder, setTransformation, setHorizontalAlign, setVerticalAlign, setHorizontalLayout, setFrameStyles, setTextRenderer];
+const stylePlugins = [
+  setMiddleOrder,
+  setTransformation,
+  setHorizontalAlign,
+  setVerticalAlign,
+  setHorizontalLayout,
+  setFrameStyles,
+  setTextRenderer
+];
 
 module.exports = {
   stylePlugins,
