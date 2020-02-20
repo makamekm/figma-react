@@ -22,11 +22,11 @@ const { stylePlugins } = require('./figma.style.plugins');
 // - typeFactory // default ({ props: componentProps }) => `{ ${Object.keys(componentProps).map(key => `${key}: ${componentProps[key] || 'any'};\n`).join('')} }`
 
 function getConfig(options = {}) {
-  let fileKey = options.fileKey || process.argv[2] || process.env.FIGMA_FILE_KEY_DEFAULT;
+  let fileKey = options.fileKey || process.argv[2] || process.env.FIGMA_FILE_KEY;
   let devToken = options.devToken || process.argv[3] || process.env.FIGMA_DEV_TOKEN;
 
   if (!fileKey || !devToken) {
-    console.log('Usage: figma-react <file-key> [figma-dev-token] or use env.FIGMA_FILE_KEY_DEFAULT, env.FIGMA_DEV_TOKEN');
+    console.log('Usage: figma-react <file-key> [figma-dev-token] or use env.FIGMA_FILE_KEY, env.FIGMA_DEV_TOKEN');
     process.exit(0);
   }
 
