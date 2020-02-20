@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const figmaReact = require('./figma');
+const figmaReact = require('.');
 
 figmaReact.runFigmaReact().catch(err => {
   console.error(err);

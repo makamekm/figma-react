@@ -8,15 +8,15 @@
 
 ### CLI Usage
 
-`figma-react <file-key> [figma-dev-token]`
+`figma-react <file-key> [figma-dev-token] <preset-name>`
 
 or you can provide .env file with the content
 
 ```
 FIGMA_FILE_KEY=...
 FIGMA_DEV_TOKEN=...
+FIGMA_PRESET=...
 ```
-
 
 ### API Usage
 

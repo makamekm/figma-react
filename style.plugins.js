@@ -8,7 +8,7 @@ const {
   paintToLinearGradient,
   paintToRadialGradient,
   applyFontStyle
-} = require('./figma.lib');
+} = require('./lib');
 
 const stylePlugins = [
   setMiddleOrder,
