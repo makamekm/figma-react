@@ -18,7 +18,7 @@ module.exports = {
     decorator: 'React.memo',
     typeFactory: typeFactoryDefault,
     prettierOptions: {
-      parser: 'babel',
+      parser: 'typescript',
       semi: true,
       tabWidth: 2,
       printWidth: 140,
@@ -41,7 +41,7 @@ module.exports = {
     decorator: 'observer',
     typeFactory: typeFactoryDefault,
     prettierOptions: {
-      parser: 'babel',
+      parser: 'typescript',
       semi: true,
       tabWidth: 2,
       printWidth: 140,
