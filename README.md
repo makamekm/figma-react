@@ -46,6 +46,7 @@ figmaReact.runFigmaReact(options).catch(err => {
 - fileKey // * required
 - devToken // * required
 - dir // default './src/design-system'
+- makeDir // default !!process.env.FIGMA_MAKE_DIR
 - stylePlugins // default from './figma.style.plugins'
 - contentPlugins // default from './figma.content.plugins'
 - classPrefix // default 'figma-'

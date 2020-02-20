@@ -9,6 +9,7 @@ const { stylePlugins } = require('./figma.style.plugins');
 // - fileKey // * required
 // - devToken // * required
 // - dir // default './src/design-system'
+// - makeDir // default !!process.env.FIGMA_MAKE_DIR
 // - stylePlugins // default from './figma.style.plugins'
 // - contentPlugins // default from './figma.content.plugins'
 // - classPrefix // default 'figma-'
@@ -34,6 +35,7 @@ function getConfig(options = {}) {
   const headers = getHeaders(devToken);
 
   options.dir = options.dir || process.env.FIGMA_DIR || './src/design-system';
+  options.makeDir = !!options.makeDir || !!process.env.FIGMA_MAKE_DIR;
 
   if (!options.contentPlugins) {
     options.contentPlugins = contentPlugins;

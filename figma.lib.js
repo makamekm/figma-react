@@ -554,7 +554,14 @@ function preprocessCanvasComponents(canvas, shared) {
   }
 }
 
+function makeDir(options) {
+  if (options.makeDir) {
+    fs.mkdirSync(fsPath.resolve(options.dir), { recursive: true });
+  }
+}
+
 function writeFile(path, contents, options = {}) {
+  makeDir(options);
   new Promise((r, e) =>
     prettier.resolveConfig('./.prettierrc').then(prettierOptions => {
       try {
