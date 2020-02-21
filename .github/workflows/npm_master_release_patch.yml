@@ -27,6 +27,7 @@ jobs:
         if: always()
         with:
           access-token: ${{ secrets.GITHUB_TOKEN_CICD }}
+          enforce_admins: false
       - run: npm run release:patch
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN_CICD}}
@@ -36,3 +37,4 @@ jobs:
         if: always()
         with:
           access-token: ${{ secrets.GITHUB_TOKEN_CICD }}
+          enforce_admins: true
