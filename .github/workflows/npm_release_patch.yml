@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v1
         with:
           node-version: 12
@@ -21,11 +23,7 @@ jobs:
       - run: git config --global user.name "CICD"
       - run: git fetch origin
       - run: git checkout -b release-patch origin/release/patch
-      - run: git pull origin release/patch --allow-unrelated-histories
-      - run: git merge origin release/patch
       - run: git checkout -b release-master origin/master
-      - run: git pull origin master --allow-unrelated-histories
-      - run: git merge origin master
       - run: git merge release-patch
       - run: npm run release:patch
         env:
