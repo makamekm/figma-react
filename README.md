@@ -96,3 +96,5 @@ figmaReact.runFigmaReact(options).catch(err => {
 
 ### Development
 `npm link`
+
+This repository uses Git Flow
