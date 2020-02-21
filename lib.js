@@ -715,7 +715,7 @@ async function generateComponentFile({ path, instance, fileName, name }, options
     imports.forEach(imp => {
       componentSrc += `${imp}\n`;
     });
-console.log(options);
+    console.log(options);
     componentSrc += `import { ${instance} } from './${fileName}${options.fileAfterFix}';\n`;
     componentSrc += `\n`;
 

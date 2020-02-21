@@ -7,7 +7,3 @@ figmaReact.runFigmaReact().catch(err => {
   console.error(err.stack);
   process.exit(1);
 });
-
-module.exports = {
-  ...figmaReact
-};

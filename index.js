@@ -10,7 +10,9 @@ function getConfig(options = {}) {
   let presetName = process.argv[4] || process.env.FIGMA_PRESET || 'default';
 
   if (!fileKey || !devToken) {
-    console.log('Usage: figma-react <file-key> [figma-dev-token] <preset-name> or use env.FIGMA_FILE_KEY, env.FIGMA_DEV_TOKEN, process.env.FIGMA_PRESET');
+    console.log(
+      'Usage: figma-react <file-key> [figma-dev-token] <preset-name> or use env.FIGMA_FILE_KEY, env.FIGMA_DEV_TOKEN, process.env.FIGMA_PRESET'
+    );
     process.exit(0);
   }
 
