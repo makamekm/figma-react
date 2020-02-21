@@ -591,7 +591,7 @@ function getDescriptionStyles({ componentDescriptionMap, options }, node) {
 async function createComponent(component, imgMap, componentMap, componentDescriptionMap, options = {}) {
   const name = getComponentName(component.name, options);
   const fileName = getFileName(name);
-  const instance = getComponentInstance(component);
+  const instance = getComponentInstance(component, options);
 
   const classPrefix = options.classPrefix || 'figma-';
   const localComponentMap = {};
@@ -715,7 +715,7 @@ async function generateComponentFile({ path, instance, fileName, name }, options
     imports.forEach(imp => {
       componentSrc += `${imp}\n`;
     });
-
+console.log(options);
     componentSrc += `import { ${instance} } from './${fileName}${options.fileAfterFix}';\n`;
     componentSrc += `\n`;
 
