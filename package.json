@@ -19,15 +19,23 @@
   "main": "index.js",
   "scripts": {
     "format": "prettier --write \"**/*.js\"",
-    "release:patch": "release-it patch --git.tagName='v${version}' --github.release",
-    "release:minor": "release-it minor --git.tagName='v${version}' --github.release",
-    "release:major": "release-it patch --git.tagName='v${version}' --github.release"
+    "release:patch": "release-it patch",
+    "release:minor": "release-it minor",
+    "release:major": "release-it patch"
   },
   "bin": {
     "figma-react": "./cli.js"
   },
   "engines": {
     "node": ">=10.12.0"
+  },
+  "release-it": {
+    "git": {
+      "tagName": "v${version}"
+    },
+    "github": {
+      "release": true
+    }
   },
   "dependencies": {
     "dotenv": "^8.2.0",
