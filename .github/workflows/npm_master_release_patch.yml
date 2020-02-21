@@ -25,4 +25,5 @@ jobs:
       - run: npm run release:patch
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN_CICD: ${{secrets.GITHUB_TOKEN_CICD}}
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
