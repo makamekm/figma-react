@@ -18,6 +18,27 @@ FIGMA_DEV_TOKEN=...
 FIGMA_PRESET=...
 ```
 
+### Example with MobX & Gatsby
+
+Run in your terminal the following code, but replace `<figma-dev-token>` with your Figma Dev Token (You can generate it on your profile settings page)
+```
+npm i -g gatsby-cli figma-react
+gatsby new figma-demo https://github.com/makamekm/gatsby-starter-typescript-ioc-mobx
+cd figma-demo
+figma-react InZsgUaqMorH2q5iapfUDK <figma-dev-token> mobx
+npm run dev
+```
+
+Then just put into pages/index.tsx the following code and import dependencies:
+```
+  <div style={{ height: '300px' }}>
+    <ChromeMockup />
+  </div>
+  <Helmet>
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet" />
+  </Helmet>
+```
+
 ### API Usage
 
 ```
@@ -57,6 +78,8 @@ figmaReact.runFigmaReact(options).catch(err => {
 - styleDescriptionDelimiter // default '!style!'
 - imports // default ['import { observer } from 'mobx-react';']
 - decorator // default 'observer'
+- classAfterFix // default 'Generated'
+- fileAfterFix // default '.generated'
 - typeFactory // default ({ props: componentProps }) => `string`
 - prettierOptions // default
 ```

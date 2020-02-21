@@ -17,6 +17,8 @@ module.exports = {
     imports: [],
     decorator: 'React.memo',
     typeFactory: typeFactoryDefault,
+    classAfterFix: 'Generated',
+    fileAfterFix: '.generated',
     prettierOptions: {
       parser: 'typescript',
       semi: true,
@@ -40,6 +42,8 @@ module.exports = {
     imports: [`import { observer } from 'mobx-react';`],
     decorator: 'observer',
     typeFactory: typeFactoryDefault,
+    classAfterFix: 'Generated',
+    fileAfterFix: '.generated',
     prettierOptions: {
       parser: 'typescript',
       semi: true,

@@ -239,8 +239,7 @@ function getComponentName(name, options = {}) {
 
 function getComponentInstance(component, options = {}) {
   const name = getComponentName(component.name, options);
-  // return name + component.id.replace(/;/g, 'S').replace(/:/g, 'D');
-  return name + 'Generated';
+  return name + options.classAfterFix;
 }
 
 function getElementParams(name, options = {}) {
@@ -717,7 +716,7 @@ async function generateComponentFile({ path, instance, fileName, name }, options
       componentSrc += `${imp}\n`;
     });
 
-    componentSrc += `import { ${instance} } from './${fileName}.generated';\n`;
+    componentSrc += `import { ${instance} } from './${fileName}${options.fileAfterFix}';\n`;
     componentSrc += `\n`;
 
     const decorator = options.decorator || 'observer';
@@ -730,7 +729,7 @@ async function generateComponentFile({ path, instance, fileName, name }, options
 }
 
 async function generateComponent(component, options) {
-  const path = fsPath.resolve(options.dir, `${component.fileName}.generated.tsx`);
+  const path = fsPath.resolve(options.dir, `${component.fileName}${options.fileAfterFix}.tsx`);
 
   // Content represents writing cursor
   let contents = '';
