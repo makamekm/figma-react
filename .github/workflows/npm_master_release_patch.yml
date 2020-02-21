@@ -23,7 +23,7 @@ jobs:
       - run: git config --global user.email "makame@mail.ru"
       - run: git config --global user.name "CICD"
       - name: Temporarily disable "include administrators" branch protection
-        uses: benjefferies/branch-protection-bot@master
+        uses: makamekm/branch-protection-bot@master
         if: always()
         with:
           access-token: ${{ secrets.GITHUB_TOKEN_CICD }}
@@ -32,7 +32,7 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN_CICD}}
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
       - name: Enable "include administrators" branch protection
-        uses: benjefferies/branch-protection-bot@master
+        uses: makamekm/branch-protection-bot@master
         if: always()  # Force to always run this step to ensure "include administrators" is always turned back on
         with:
           access-token: ${{ secrets.GITHUB_TOKEN_CICD }}
