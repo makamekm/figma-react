@@ -445,7 +445,8 @@ async function visitNode(shared, node, parent = null, notFirst = false) {
 
   // If it's a parent then remove overflow
   if (parent == null) {
-    delete middleStyle.position;
+    // delete middleStyle.position;
+    outerStyle.position = 'relative';
   }
 
   // Render

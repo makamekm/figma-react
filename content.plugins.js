@@ -22,14 +22,23 @@ function applyStyles(state) {
 
 // TODO: use import from './${getComponentName(node.name, options)}'
 async function setComponentFromCache(state, shared) {
-  const { node, content } = state;
-  const { component, imgMap, componentMap, componentDescriptionMap, localComponentMap, options, additionalStyles } = shared;
+  const { node, content, classNames } = state;
+  const { component, imgMap, componentMap, componentDescriptionMap, localComponentMap, options, additionalStyles, genClassName } = shared;
   if (node.id !== component.id && node.name.charAt(0) === '#') {
     const name = getComponentName(node.name, options);
     emptyChildren(state);
     content.push(`<${name} {...props} nodeId='${node.id}' />`);
     if (!componentMap[name]) await createComponent(node, imgMap, componentMap, componentDescriptionMap, options);
     localComponentMap[name] = componentMap[name];
+
+    const currentClass = genClassName();
+    classNames.push(currentClass);
+    additionalStyles.push(`
+      .${currentClass} > :global(*) {
+        height: 100%;
+        width: 100%;
+      }
+    `);
   } else if (node.id !== component.id) {
     const styles = getDescriptionStyles(shared, node);
     if (styles) {

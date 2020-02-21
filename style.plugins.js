@@ -46,11 +46,19 @@ function setTransformation({ middleStyle, bounds }) {
 
 function setHorizontalAlign({ node, middleStyle, outerStyle, bounds }) {
   const cHorizontal = node.constraints && node.constraints.horizontal;
+  middleStyle.debugH = cHorizontal;
+  if (bounds && bounds.width && cHorizontal !== 'LEFT_RIGHT' && cHorizontal !== 'SCALE') middleStyle.width = bounds.width;
   if (cHorizontal === 'LEFT_RIGHT') {
     if (bounds != null) {
-      middleStyle.marginLeft = bounds.left;
-      middleStyle.marginRight = bounds.right;
-      middleStyle.flexGrow = 1;
+      outerStyle.position = 'relative';
+      outerStyle.display = 'flex';
+      outerStyle.pointerEvents = 'none';
+      outerStyle.justifyContent = 'stretch';
+      if (bounds != null) {
+        middleStyle.marginLeft = bounds.left;
+        middleStyle.marginRight = bounds.right;
+        middleStyle.flexGrow = 1;
+      }
     }
   } else if (cHorizontal === 'RIGHT') {
     outerStyle.position = 'relative';
@@ -74,6 +82,11 @@ function setHorizontalAlign({ node, middleStyle, outerStyle, bounds }) {
       middleStyle.marginLeft = bounds.left && bounds.right ? bounds.left - bounds.right : null;
     }
   } else if (cHorizontal === 'SCALE') {
+    outerStyle.position = 'relative';
+    outerStyle.display = 'flex';
+    outerStyle.width = '100%';
+    outerStyle.pointerEvents = 'none';
+    outerStyle.justifyContent = 'center';
     if (bounds != null) {
       const parentWidth = bounds.left + bounds.width + bounds.right;
       middleStyle.width = `${(bounds.width * 100) / parentWidth}%`;
@@ -90,16 +103,16 @@ function setHorizontalAlign({ node, middleStyle, outerStyle, bounds }) {
 
 function setVerticalAlign({ node, middleStyle, outerStyle, bounds }) {
   const cVertical = node.constraints && node.constraints.vertical;
+  middleStyle.debugV = cVertical;
   if (bounds && bounds.height && cVertical !== 'TOP_BOTTOM') middleStyle.height = bounds.height;
   if (cVertical === 'TOP_BOTTOM') {
-    outerStyle.position = 'relative';
-    outerStyle.display = 'flex';
     outerStyle.width = '100%';
     outerStyle.pointerEvents = 'none';
     outerStyle.position = 'absolute';
     outerStyle.height = '100%';
     outerStyle.top = 0;
     outerStyle.left = 0;
+    outerStyle.alignItems = 'stretch';
     if (bounds != null) {
       middleStyle.marginTop = bounds.top;
       middleStyle.marginBottom = bounds.bottom;
@@ -114,6 +127,7 @@ function setVerticalAlign({ node, middleStyle, outerStyle, bounds }) {
     outerStyle.height = '100%';
     outerStyle.top = 0;
     outerStyle.left = 0;
+    outerStyle.alignItems = 'center';
     if (bounds != null) {
       middleStyle.marginTop = bounds.top - bounds.bottom;
     }
@@ -126,6 +140,7 @@ function setVerticalAlign({ node, middleStyle, outerStyle, bounds }) {
     outerStyle.height = '100%';
     outerStyle.top = 0;
     outerStyle.left = 0;
+    outerStyle.alignItems = 'stretch';
     if (bounds != null) {
       const parentHeight = bounds.top + bounds.height + bounds.bottom;
       middleStyle.height = `${(bounds.height * 100) / parentHeight}%`;
