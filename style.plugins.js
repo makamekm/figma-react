@@ -94,6 +94,8 @@ function setHorizontalAlign({ node, middleStyle, outerStyle, bounds }) {
     }
   } else {
     if (bounds != null) {
+      outerStyle.position = 'relative';
+      outerStyle.display = 'flex';
       middleStyle.marginLeft = bounds.left;
       middleStyle.width = bounds.width;
       middleStyle.minWidth = bounds.width;
@@ -148,6 +150,8 @@ function setVerticalAlign({ node, middleStyle, outerStyle, bounds }) {
     }
   } else {
     if (bounds != null) {
+      outerStyle.position = 'relative';
+      outerStyle.display = 'flex';
       middleStyle.marginTop = bounds.top;
       middleStyle.marginBottom = bounds.bottom;
       middleStyle.minHeight = middleStyle.height;
@@ -180,9 +184,9 @@ function setHorizontalLayout({ node, middleStyle, innerStyle, parent, classNames
   }
 
   if (parent && parent.layoutMode === 'HORIZONTAL') {
-    middleStyle.marginLeft = parent.itemSpacing;
-    middleStyle.marginRight = parent.itemSpacing;
-    middleStyle.marginTop = parent.itemSpacing;
+    middleStyle.marginLeft = 0;
+    middleStyle.marginRight = 0;
+    middleStyle.marginTop = 0;
     middleStyle.marginBottom = 0;
   }
 }
