@@ -6,6 +6,7 @@ on:
       - master
     paths-ignore:
       - 'package.json'
+      - '.github/**'
 
 jobs:
   publish_patch:
