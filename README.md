@@ -99,4 +99,3 @@ figmaReact.runFigmaReact(options).catch(err => {
 
 This repository uses Git Flow
 
-
