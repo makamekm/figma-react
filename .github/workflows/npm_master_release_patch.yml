@@ -33,8 +33,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
       - name: Enable "include administrators" branch protection
         uses: makamekm/branch-protection-bot@master
-        if: always()  # Force to always run this step to ensure "include administrators" is always turned back on
+        if: always()
         with:
           access-token: ${{ secrets.GITHUB_TOKEN_CICD }}
-          owner: benjefferies
-          repo: branch-protection-bot
