@@ -8,23 +8,19 @@ on:
       - 'package.json'
 
 jobs:
-  build:
+  install:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-      - run: |
-          npm install
-          npm run test
+      - run: npm install
         env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
           NODE_ENV: development
 
   publish:
-    needs: build
+    needs: install
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
