@@ -18,10 +18,17 @@
   "license": "MIT",
   "main": "index.js",
   "scripts": {
-    "format": "prettier --write \"**/*.js\"",
-    "release:patch": "release-it patch",
-    "release:minor": "release-it minor",
-    "release:major": "release-it patch"
+    "format:fix": "prettier --write \"**/*.js\"",
+    "format": "prettier \"**/*.js\"",
+    "is-master": "git-branch-is master",
+    "release:current-branch": "release-it",
+    "release:current-branch:patch": "release-it patch -n",
+    "release:current-branch:minor": "release-it minor -n",
+    "release:current-branch:major": "release-it major -n",
+    "release": "run-s is-master format release:current-branch",
+    "release:patch": "run-s is-master format release:current-branch:patch",
+    "release:minor": "run-s is-master format release:current-branch:minor",
+    "release:major": "run-s is-master format release:current-branch:major"
   },
   "bin": {
     "figma-react": "./cli.js"
@@ -43,6 +50,8 @@
     "prettier": "^1.19.1"
   },
   "devDependencies": {
+    "git-branch-is": "^3.1.0",
+    "npm-run-all": "^4.1.5",
     "release-it": "^12.6.0"
   }
 }
