@@ -21,10 +21,10 @@
     "format": "prettier --write \"**/*.js\"",
     "lint": "eslint \"**/*.js\"",
     "is-master": "git-branch-is master",
-    "release:current-branch": "GITHUB_TOKEN=$GITHUB_TOKEN_CICD release-it",
-    "release:current-branch:patch": "GITHUB_TOKEN=$GITHUB_TOKEN_CICD release-it patch -n",
-    "release:current-branch:minor": "GITHUB_TOKEN=$GITHUB_TOKEN_CICD release-it minor -n",
-    "release:current-branch:major": "GITHUB_TOKEN=$GITHUB_TOKEN_CICD release-it major -n",
+    "release:current-branch": "export GITHUB_TOKEN=$GITHUB_TOKEN_CICD && release-it",
+    "release:current-branch:patch": "export GITHUB_TOKEN=$GITHUB_TOKEN_CICD && release-it patch -n",
+    "release:current-branch:minor": "export GITHUB_TOKEN=$GITHUB_TOKEN_CICD && release-it minor -n",
+    "release:current-branch:major": "export GITHUB_TOKEN=$GITHUB_TOKEN_CICD && release-it major -n",
     "release": "run-s is-master lint release:current-branch",
     "release:patch": "run-s is-master lint release:current-branch:patch",
     "release:minor": "run-s is-master lint release:current-branch:minor",
@@ -45,7 +45,7 @@
       "release": true
     },
     "hooks": {
-      "after:git:release": "git push origin HEAD"
+      "after:git:release": "git push origin HEAD --force"
     }
   },
   "dependencies": {
