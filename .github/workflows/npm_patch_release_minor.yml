@@ -1,0 +1,27 @@
+name: Node.js Minor Release
+
+on:
+  push:
+    branches:
+      - release/minor
+
+jobs:
+  publish_patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+      - run: npm install
+        env:
+          NODE_ENV: development
+      - run: git config --global user.email "makame@mail.ru"
+      - run: git config --global user.name "CICD"
+      - run: git checkout master
+      - run: git merge release/minor
+      - run: npm run release:minor
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN_CICD}}
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
