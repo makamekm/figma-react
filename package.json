@@ -38,10 +38,14 @@
   },
   "release-it": {
     "git": {
-      "tagName": "v${version}"
+      "tagName": "v${version}",
+      "push": false
     },
     "github": {
       "release": true
+    },
+    "hooks": {
+      "after:git:release": "git push origin HEAD --force"
     }
   },
   "dependencies": {
