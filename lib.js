@@ -447,6 +447,11 @@ async function visitNode(shared, node, parent = null, notFirst = false) {
   if (parent == null) {
     // delete middleStyle.position;
     outerStyle.position = 'relative';
+
+    if (Object.keys(outerStyle).length > 0) {
+      outerStyle.width = '100%';
+      outerStyle.height = '100%';
+    }
   }
 
   // Render
