@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v1
         with:
           node-version: 12
@@ -19,7 +21,8 @@ jobs:
           NODE_ENV: development
       - run: git config --global user.email "makame@mail.ru"
       - run: git config --global user.name "CICD"
-      - run: git checkout master
+      - run: git fetch origin
+      - run: git checkout -b master origin/master
       - run: git merge release/minor
       - run: npm run release:minor
         env:
