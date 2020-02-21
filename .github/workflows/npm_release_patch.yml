@@ -21,7 +21,6 @@ jobs:
       - run: git config --global user.name "CICD"
       - run: git fetch origin
       - run: git pull
-      - run: git branch master origin/master
       - run: git checkout -b release-master origin/master
       - run: git pull
       - run: git pull origin release/patch
