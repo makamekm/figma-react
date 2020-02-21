@@ -19,9 +19,10 @@
   "main": "index.js",
   "scripts": {
     "format": "prettier --write \"**/*.js\"",
-    "release:patch": "release-it patch",
-    "release:minor": "release-it minor",
-    "release:major": "release-it patch"
+    "release": "release-it",
+    "release:patch": "release-it patch -n",
+    "release:minor": "release-it minor -n",
+    "release:major": "release-it patch -n"
   },
   "bin": {
     "figma-react": "./cli.js"
