@@ -1,4 +1,4 @@
-name: Node.js Minor Release
+name: Node.js Major Release
 
 on:
   push:
