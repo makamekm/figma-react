@@ -19,7 +19,7 @@ jobs:
           NODE_ENV: development
       - run: git config --global user.email "makame@mail.ru"
       - run: git config --global user.name "CICD"
-      - run: git checkout master
+      - run: git checkout --track origin/master
       - run: git merge release/patch
       - run: npm run release:patch
         env:
