@@ -98,3 +98,4 @@ figmaReact.runFigmaReact(options).catch(err => {
 `npm link`
 
 This repository uses Git Flow
+
