@@ -19,6 +19,8 @@ jobs:
       - run: npm install
         env:
           NODE_ENV: development
+      - run: git config --global user.email "makame@mail.ru"
+      - run: git config --global user.name "CICD"
       - run: npm run release:patch
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN_CICD}}
