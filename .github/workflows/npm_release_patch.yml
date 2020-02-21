@@ -23,7 +23,7 @@ jobs:
       - run: git pull
       - run: git checkout -b release-master origin/master
       - run: git pull
-      - run: git pull origin release/patch
+      - run: git pull origin release/patch --allow-unrelated-histories
       - run: npm run release:patch
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN_CICD}}
