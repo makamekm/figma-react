@@ -18,7 +18,10 @@
   "license": "MIT",
   "main": "index.js",
   "scripts": {
-    "format": "prettier --write \"**/*.js\""
+    "format": "prettier --write \"**/*.js\"",
+    "release:patch": "release-it patch --git.tagName='v${version}' --github.release",
+    "release:minor": "release-it minor --git.tagName='v${version}' --github.release",
+    "release:major": "release-it patch --git.tagName='v${version}' --github.release"
   },
   "bin": {
     "figma-react": "./cli.js"
@@ -30,5 +33,8 @@
     "dotenv": "^8.2.0",
     "node-fetch": "^2.6.0",
     "prettier": "^1.19.1"
+  },
+  "devDependencies": {
+    "release-it": "^12.6.0"
   }
 }
