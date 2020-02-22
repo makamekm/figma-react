@@ -1,0 +1,31 @@
+name: Node.js Develop Test
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  publish_patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+      - run: npm install
+        env:
+          NODE_ENV: development
+      - run: npm run lint
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN_CICD}}
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+      - name: send custom message
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            The ${{ github.event_name }} event triggered final step.
+            echo This event is a pull request that had an assignee removed.
