@@ -19,8 +19,7 @@ jobs:
           NODE_ENV: development
       - run: npm run lint
         env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN_CICD}}
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: send custom message
         uses: appleboy/telegram-action@master
         with:
