@@ -17,7 +17,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             return context.payload.ref.replace(/\/refs\/tags\//, '');
-      - name: send a release notes
+      - name: send release notes
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_PUBLIC_TO }}
