@@ -20,6 +20,14 @@ jobs:
       - run: npm run lint
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name : GITHUB CONTEXT
+        env: 
+          GITHUB_CONTEXT: ${{ toJson(github) }} 
+        run: echo "$GITHUB_CONTEXT" 
+      - name: get commit message
+        run: echo ::set-env name=commitmsg::$(git log --format=%B -n 1 ${{ github.event.after }})
+      - name: show commit message
+        run : echo $commitmsg
       - name: send a success message
         uses: appleboy/telegram-action@master
         with:
@@ -30,6 +38,7 @@ jobs:
             SUCCESSFULLY - test
             Triggered by ${{ github.event_name }} event
             https://github.com/makamekm/figma-react/actions/runs/${{ github.run_id }}
+            {{ commitmsg }}
       - name: send a fail message
         uses: appleboy/telegram-action@master
         if: failure()
@@ -41,3 +50,4 @@ jobs:
             FAILED - test
             Triggered by ${{ github.event_name }} event
             https://github.com/makamekm/figma-react/actions/runs/${{ github.run_id }}
+            {{ commitmsg }}
