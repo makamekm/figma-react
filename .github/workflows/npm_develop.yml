@@ -6,7 +6,7 @@ on:
       - develop
 
 jobs:
-  publish_patch:
+  test_develop:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
