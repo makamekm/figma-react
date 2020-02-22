@@ -21,14 +21,9 @@
     "format": "prettier --write \"**/*.js\"",
     "lint": "eslint \"**/*.js\"",
     "is-master": "git-branch-is master",
-    "release:current-branch": "release-it",
-    "release:current-branch:patch": "release-it patch -n",
-    "release:current-branch:minor": "release-it minor -n",
-    "release:current-branch:major": "release-it major -n",
-    "release": "run-s is-master lint release:current-branch",
-    "release:patch": "run-s is-master lint release:current-branch:patch",
-    "release:minor": "run-s is-master lint release:current-branch:minor",
-    "release:major": "run-s is-master lint release:current-branch:major"
+    "release:patch": "run-s is-master lint \"release-it patch -n\"",
+    "release:minor": "run-s is-master lint \"release-it minor -n\"",
+    "release:major": "run-s is-master lint \"release-it major -n\""
   },
   "bin": {
     "figma-react": "./cli.js"

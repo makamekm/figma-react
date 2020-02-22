@@ -6,7 +6,7 @@ on:
       - release/minor
 
 jobs:
-  publish_patch:
+  publish_minor:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
