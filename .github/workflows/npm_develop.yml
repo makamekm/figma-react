@@ -38,7 +38,7 @@ jobs:
             SUCCESSFULLY - test
             Triggered by ${{ github.event_name }} event
             https://github.com/makamekm/figma-react/actions/runs/${{ github.run_id }}
-            ${{ $commitmsg }}
+            $commitmsg
       - name: send a fail message
         uses: appleboy/telegram-action@master
         if: failure()
@@ -50,4 +50,4 @@ jobs:
             FAILED - test
             Triggered by ${{ github.event_name }} event
             https://github.com/makamekm/figma-react/actions/runs/${{ github.run_id }}
-            ${{ $commitmsg }}
+            $commitmsg
