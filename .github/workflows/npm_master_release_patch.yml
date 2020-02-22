@@ -38,3 +38,24 @@ jobs:
         with:
           access-token: ${{ secrets.GITHUB_TOKEN_CICD }}
           enforce_admins: true
+      - name: send a success message
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            Figma React - ${{ github.ref }}
+            SUCCESSFULLY - publish
+            Triggered by ${{ github.event_name }} event
+            https://github.com/makamekm/figma-react/actions/runs/${{ github.run_id }}
+      - name: send a fail message
+        uses: appleboy/telegram-action@master
+        if: failure()
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            Figma React - ${{ github.ref }}
+            FAILED - publish
+            Triggered by ${{ github.event_name }} event
+            https://github.com/makamekm/figma-react/actions/runs/${{ github.run_id }}

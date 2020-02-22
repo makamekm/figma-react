@@ -27,10 +27,10 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
             Figma React - ${{ github.ref }}
-            SUCCESSFULLY
+            SUCCESSFULLY - test
             Triggered by ${{ github.event_name }} event
             https://github.com/makamekm/figma-react/actions/runs/${{ github.run_id }}
-      - name: send a success message
+      - name: send a fail message
         uses: appleboy/telegram-action@master
         if: failure()
         with:
@@ -38,6 +38,6 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
             Figma React - ${{ github.ref }}
-            FAILED
+            FAILED - test
             Triggered by ${{ github.event_name }} event
             https://github.com/makamekm/figma-react/actions/runs/${{ github.run_id }}
