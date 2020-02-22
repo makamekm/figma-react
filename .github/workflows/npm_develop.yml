@@ -20,11 +20,24 @@ jobs:
       - run: npm run lint
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-      - name: send custom message
+      - name: send a success message
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
-            The ${{ github.event_name }} event triggered final step.
-            echo This event is a pull request that had an assignee removed.
+            Figma React - ${{ github.ref }}
+            SUCCESSFULLY
+            Triggered by ${{ github.event_name }} event
+            https://github.com/makamekm/figma-react/actions/runs/${{ github.run_id }}
+      - name: send a success message
+        uses: appleboy/telegram-action@master
+        if: failure()
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            Figma React - ${{ github.ref }}
+            FAILED
+            Triggered by ${{ github.event_name }} event
+            https://github.com/makamekm/figma-react/actions/runs/${{ github.run_id }}
