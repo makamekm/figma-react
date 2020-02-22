@@ -1,0 +1,28 @@
+name: Node.js Public Release Notes
+
+on:
+  release:
+
+jobs:
+  test_develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Extract tag name
+        id: tag
+        uses: actions/github-script@0.2.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            return context.payload.ref.replace(/\/refs\/tags\//, '');
+      - name: send a release notes
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_PUBLIC_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            New version of Figma React ${{ steps.tag.outputs.result }} has been released
+            https://github.com/makamekm/figma-react/releases/tag/${{ steps.tag.outputs.result }}
+            https://www.npmjs.com/package/figma-react
