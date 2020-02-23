@@ -21,6 +21,7 @@
     "format": "prettier --write \"**/*.js\"",
     "lint": "eslint \"**/*.js\"",
     "is-master": "git-branch-is master",
+    "release-it": "release-it",
     "release:patch": "run-s is-master lint \"release-it patch -n\"",
     "release:minor": "run-s is-master lint \"release-it minor -n\"",
     "release:major": "run-s is-master lint \"release-it major -n\""
