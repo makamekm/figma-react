@@ -1,7 +1,7 @@
 {
   "name": "figma-react",
   "description": "This is a tool to help you export Figma project into React mockups",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "private": false,
   "author": "Maxim Karpov <makame@mail.ru>",
   "repository": {
