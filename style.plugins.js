@@ -206,8 +206,9 @@ async function setFrameStyles(state, { pngImages, headers, options }) {
       middleStyle.backgroundColor = colorString(node.backgroundColor);
       if (node.clipsContent) middleStyle.overflow = 'hidden';
     } else if (node.type === 'RECTANGLE') {
+      // TODO: Foreach fills
       const lastFill = getPaint(node.fills);
-      if (lastFill) {
+      if (lastFill && lastFill.visible !== false) {
         if (lastFill.type === 'SOLID') {
           middleStyle.backgroundColor = colorString(lastFill.color);
           middleStyle.opacity = lastFill.opacity;
