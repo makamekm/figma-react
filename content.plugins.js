@@ -23,7 +23,17 @@ function applyStyles(state) {
 // TODO: use import from './${getComponentName(node.name, options)}'
 async function setComponentFromCache(state, shared) {
   const { node, content, classNames } = state;
-  const { component, imgMap, pngImages, componentMap, componentDescriptionMap, localComponentMap, options, additionalStyles, genClassName } = shared;
+  const {
+    component,
+    imgMap,
+    pngImages,
+    componentMap,
+    componentDescriptionMap,
+    localComponentMap,
+    options,
+    additionalStyles,
+    genClassName
+  } = shared;
   if (node.id !== component.id && node.name.charAt(0) === '#') {
     const name = getComponentName(node.name, options);
     emptyChildren(state);
