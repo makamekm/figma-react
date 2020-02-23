@@ -1,7 +1,9 @@
 name: Node.js Public Release Notes
 
 on:
-  release:
+  push:
+    tags:
+    - '*'
 
 jobs:
   test_develop:
