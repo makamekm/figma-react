@@ -49,7 +49,7 @@ async function setComponentFromCache(state, shared) {
 
 function renderVector(state, { imgMap, genClassName, additionalStyles }) {
   const { node, content } = state;
-  if (node.type === 'VECTOR') {
+  if (node.type === 'VECTOR' && imgMap[node.id]) {
     emptyChildren(state);
 
     const currentClass = genClassName();
