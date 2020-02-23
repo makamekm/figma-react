@@ -29,10 +29,12 @@ function setMiddleOrder({ node, middleStyle }) {
   }
 }
 
-function setTransformation({ middleStyle, bounds }) {
-  if (bounds && Math.abs(bounds.angle) > 0.01) {
-    middleStyle.transform = `rotate(${-bounds.angle}deg)`;
-    middleStyle.transformOrigin = '50% 50%';
+function setTransformation({ middleStyle, bounds, node }) {
+  if (node.type !== 'VECTOR') {
+    if (bounds && Math.abs(bounds.angle) > 0.01) {
+      middleStyle.transform = `rotate(${-bounds.angle}deg)`;
+      middleStyle.transformOrigin = '50% 50%';
+    }
   }
 }
 
