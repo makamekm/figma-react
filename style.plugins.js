@@ -1,4 +1,5 @@
 const requestImageSize = require('request-image-size');
+const fetch = require('node-fetch');
 const { colorString, dropShadow, innerShadow, getPaint, paintToLinearGradient, paintToRadialGradient, applyFontStyle } = require('./lib');
 
 const stylePlugins = [
@@ -198,8 +199,8 @@ function setHorizontalLayout({ node, middleStyle, innerStyle, parent, classNames
   }
 }
 
-async function setFrameStyles(state, { pngImages }) {
-  const { node, middleStyle } = state;
+async function setFrameStyles(state, { pngImages, headers, options }) {
+  const { node, middleStyle, props } = state;
   if (['FRAME', 'RECTANGLE', 'INSTANCE', 'COMPONENT'].indexOf(node.type) >= 0) {
     if (['FRAME', 'COMPONENT', 'INSTANCE'].indexOf(node.type) >= 0) {
       middleStyle.backgroundColor = colorString(node.backgroundColor);
@@ -212,7 +213,14 @@ async function setFrameStyles(state, { pngImages }) {
           middleStyle.opacity = lastFill.opacity;
         } else if (lastFill.type === 'IMAGE') {
           const imageSize = await requestImageSize(pngImages[lastFill.imageRef]);
-          middleStyle.backgroundImage = `url(${pngImages[lastFill.imageRef]})`;
+          if (options.useBase64Images || Object.keys(props).includes('useBase64')) {
+            const imageRequest = await fetch(pngImages[lastFill.imageRef], { headers });
+            const imageBuffer = await imageRequest.buffer();
+            const imageDataURL = `data:${imageRequest.headers.get('content-type')};base64,${imageBuffer.toString('base64')}`;
+            middleStyle.backgroundImage = `url(${imageDataURL})`;
+          } else {
+            middleStyle.backgroundImage = `url(${pngImages[lastFill.imageRef]})`;
+          }
           middleStyle.backgroundPosition = 'center center';
           middleStyle.backgroundRepeat = 'no-repeat';
           if (lastFill.scaleMode === 'FILL') {

@@ -582,7 +582,8 @@ function getDescriptionStyles({ componentDescriptionMap, options }, node) {
   return description.substring(description.indexOf(delimiter) + delimiter.length).replace(/\\n/g, `\n`);
 }
 
-async function createComponent(component, imgMap, pngImages, componentMap, componentDescriptionMap, options = {}) {
+async function createComponent(component, parentShared) {
+  const { componentMap, options } = parentShared;
   const name = getComponentName(component.name, options);
   const fileName = getFileName(name);
   const instance = getComponentInstance(component, options);
@@ -625,6 +626,7 @@ async function createComponent(component, imgMap, pngImages, componentMap, compo
   const path = `src/design-system/${fileName}.tsx`;
 
   const shared = {
+    ...parentShared,
     name,
     fileName,
     path,
@@ -636,14 +638,9 @@ async function createComponent(component, imgMap, pngImages, componentMap, compo
     genClassName,
     printStyle,
     additionalStyles,
-    imgMap,
-    pngImages,
-    componentMap,
-    componentDescriptionMap,
     localComponentMap,
     stylePlugins: options.stylePlugins,
-    contentPlugins: options.contentPlugins,
-    options
+    contentPlugins: options.contentPlugins
   };
 
   print(`return (<>`);
@@ -691,12 +688,12 @@ async function createComponent(component, imgMap, pngImages, componentMap, compo
   componentMap[name] = { instance, name, doc, fileName, localComponentMap };
 }
 
-async function createComponents(canvas, images, pngImages, componentMap, componentDescriptionMap, options = {}) {
+async function createComponents(canvas, shared) {
   for (let i = 0; i < canvas.children.length; i++) {
     const child = canvas.children[i];
     if (child.name.charAt(0) === '#' && child.visible !== false) {
       const child = canvas.children[i];
-      await createComponent(child, images, pngImages, componentMap, componentDescriptionMap, options);
+      await createComponent(child, shared);
     }
   }
 }
