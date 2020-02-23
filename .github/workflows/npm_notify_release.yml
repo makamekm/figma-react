@@ -1,7 +1,9 @@
 name: Node.js Public Release Notes
 
 on:
-  release:
+  push:
+    tags:
+    - 'v*'
 
 jobs:
   test_develop:
@@ -12,11 +14,12 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: Extract tag name
         id: tag
-        uses: actions/github-script@0.2.0
+        uses: actions/github-script@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: string
           script: |
-            return context.payload.ref.replace(/\/refs\/tags\//, '');
+            return context.payload.ref.replace(/refs\/tags\//, '');
       - name: send release notes
         uses: appleboy/telegram-action@master
         with:

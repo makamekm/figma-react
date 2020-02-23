@@ -29,10 +29,12 @@ function setMiddleOrder({ node, middleStyle }) {
   }
 }
 
-function setTransformation({ middleStyle, bounds }) {
-  if (bounds && Math.abs(bounds.angle) > 0.01) {
-    middleStyle.transform = `rotate(${-bounds.angle}deg)`;
-    middleStyle.transformOrigin = '50% 50%';
+function setTransformation({ middleStyle, bounds, node }) {
+  if (node.type !== 'VECTOR') {
+    if (bounds && Math.abs(bounds.angle) > 0.01) {
+      middleStyle.transform = `rotate(${-bounds.angle}deg)`;
+      middleStyle.transformOrigin = '50% 50%';
+    }
   }
 }
 
@@ -206,8 +208,9 @@ async function setFrameStyles(state, { pngImages, headers, options }) {
       middleStyle.backgroundColor = colorString(node.backgroundColor);
       if (node.clipsContent) middleStyle.overflow = 'hidden';
     } else if (node.type === 'RECTANGLE') {
+      // TODO: Foreach fills
       const lastFill = getPaint(node.fills);
-      if (lastFill) {
+      if (lastFill && lastFill.visible !== false) {
         if (lastFill.type === 'SOLID') {
           middleStyle.backgroundColor = colorString(lastFill.color);
           middleStyle.opacity = lastFill.opacity;
@@ -233,9 +236,8 @@ async function setFrameStyles(state, { pngImages, headers, options }) {
             middleStyle.backgroundSize = `${lastFill.scalingFactor * imageSize.width}px ${lastFill.scalingFactor * imageSize.height}px`;
           } else if (lastFill.scaleMode === 'STRETCH') {
             middleStyle.backgroundRepeat = 'no-repeat';
-            middleStyle.backgroundSize = `${imageSize.width}px ${imageSize.height}px`;
-            middleStyle.backgroundPosition = `-${imageSize.width * lastFill.imageTransform[0][2]}px -${imageSize.height *
-              lastFill.imageTransform[1][2]}px`;
+            middleStyle.backgroundSize = 'cover';
+            middleStyle.backgroundPosition = `${100 * lastFill.imageTransform[0][2]}% ${100 * lastFill.imageTransform[1][2]}%`;
           }
         } else if (lastFill.type === 'GRADIENT_LINEAR') {
           middleStyle.background = paintToLinearGradient(lastFill);
