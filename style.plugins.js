@@ -116,6 +116,7 @@ function setVerticalAlign({ node, middleStyle, outerStyle, bounds }) {
     outerStyle.left = 0;
     outerStyle.alignItems = 'stretch';
     if (bounds != null) {
+      middleStyle.position = 'relative';
       middleStyle.marginTop = bounds.top;
       middleStyle.marginBottom = bounds.bottom;
     }
@@ -131,6 +132,7 @@ function setVerticalAlign({ node, middleStyle, outerStyle, bounds }) {
     outerStyle.left = 0;
     outerStyle.alignItems = 'center';
     if (bounds != null) {
+      middleStyle.position = 'relative';
       middleStyle.marginTop = bounds.top - bounds.bottom;
     }
   } else if (cVertical === 'SCALE') {
@@ -144,14 +146,28 @@ function setVerticalAlign({ node, middleStyle, outerStyle, bounds }) {
     outerStyle.left = 0;
     outerStyle.alignItems = 'stretch';
     if (bounds != null) {
+      middleStyle.position = 'relative';
       const parentHeight = bounds.top + bounds.height + bounds.bottom;
       middleStyle.height = `${(bounds.height * 100) / parentHeight}%`;
       middleStyle.top = `${(bounds.top * 100) / parentHeight}%`;
+    }
+  } else if (cVertical === 'BOTTOM') {
+    outerStyle.width = '100%';
+    outerStyle.pointerEvents = 'none';
+    outerStyle.position = 'absolute';
+    outerStyle.height = '100%';
+    outerStyle.bottom = 0;
+    outerStyle.left = 0;
+    outerStyle.alignItems = 'flex-end';
+    if (bounds != null) {
+      middleStyle.position = 'relative';
+      middleStyle.marginBottom = bounds.bottom;
     }
   } else {
     if (bounds != null) {
       outerStyle.position = 'relative';
       outerStyle.display = 'flex';
+      middleStyle.position = 'relative';
       middleStyle.marginTop = bounds.top;
       middleStyle.marginBottom = bounds.bottom;
       middleStyle.minHeight = middleStyle.height;
@@ -191,7 +207,7 @@ function setHorizontalLayout({ node, middleStyle, innerStyle, parent, classNames
   }
 }
 
-function setFrameStyles({ node, middleStyle }) {
+function setFrameStyles({ node, middleStyle }, { pngImages }) {
   if (['FRAME', 'RECTANGLE', 'INSTANCE', 'COMPONENT'].indexOf(node.type) >= 0) {
     if (['FRAME', 'COMPONENT', 'INSTANCE'].indexOf(node.type) >= 0) {
       middleStyle.backgroundColor = colorString(node.backgroundColor);
@@ -203,8 +219,17 @@ function setFrameStyles({ node, middleStyle }) {
           middleStyle.backgroundColor = colorString(lastFill.color);
           middleStyle.opacity = lastFill.opacity;
         } else if (lastFill.type === 'IMAGE') {
-          middleStyle.backgroundImage = imageURL(lastFill.imageRef);
+          middleStyle.backgroundImage = `url(${pngImages[lastFill.imageRef]})`;
           middleStyle.backgroundSize = backgroundSize(lastFill.scaleMode);
+          // middleStyle.transform = `matrix(${[
+          //   lastFill.imageTransform[0][0],
+          //   lastFill.imageTransform[1][0],
+          //   lastFill.imageTransform[0][1],
+          //   lastFill.imageTransform[1][1],
+          //   lastFill.imageTransform[0][2],
+          //   lastFill.imageTransform[1][2]
+          // ].join(',')})`;
+          // console.log(middleStyle.transform);
         } else if (lastFill.type === 'GRADIENT_LINEAR') {
           middleStyle.background = paintToLinearGradient(lastFill);
         } else if (lastFill.type === 'GRADIENT_RADIAL') {
@@ -259,9 +284,39 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
 
     middleStyle.display = 'flex';
     middleStyle.maxWidth = '-webkit-fill-available';
+    middleStyle.alignContent = 'flex-start';
+
+    if (fontStyle.textAlignHorizontal === 'CENTER') {
+      middleStyle.justifyContent = 'center';
+    } else if (fontStyle.textAlignHorizontal === 'LEFT') {
+      middleStyle.justifyContent = 'flex-start';
+    } else if (fontStyle.textAlignHorizontal === 'RIGHT') {
+      middleStyle.justifyContent = 'flex-end';
+    }
+
+    if (fontStyle.textAlignVertical === 'CENTER') {
+      middleStyle.verticalAlign = 'middle';
+      middleStyle.alignItems = 'center';
+      middleStyle.alignContent = 'center';
+    } else if (fontStyle.textAlignVertical === 'TOP') {
+      middleStyle.verticalAlign = 'top';
+      middleStyle.alignItems = 'flex-start';
+      middleStyle.alignContent = 'flex-start';
+    } else if (fontStyle.textAlignVertical === 'BOTTOM') {
+      middleStyle.verticalAlign = 'bottom';
+      middleStyle.alignItems = 'flex-end';
+      middleStyle.alignContent = 'flex-end';
+    }
 
     if (Object.keys(props).includes('input')) {
-      content.push(`<input key="${node.id}" type="text" placeholder="${node.characters}" name="${node.name.substring(7)}" />`);
+      const inputId = printStyle({
+        flex: 1
+      });
+      content.push(
+        `<input key="${node.id}" className="${inputId}" type="${props.input || 'text'}" placeholder="${
+          node.characters
+        }" name="${node.name.substring(7)}" />`
+      );
     } else {
       let para = '';
       const styleCache = {};
@@ -274,7 +329,9 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
 
       const commitParagraph = key => {
         if (para !== '') {
-          if (styleCache[currStyle] == null) styleCache[currStyle] = {};
+          if (styleCache[currStyle] == null) {
+            styleCache[currStyle] = {};
+          }
 
           if (node.styleOverrideTable[currStyle] && node.styleOverrideTable[currStyle].fills) {
             const lastFill = getPaint(node.styleOverrideTable[currStyle].fills);
@@ -319,7 +376,15 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
 
         if (node.characters[i] === '\n') {
           commitParagraph(i);
-          content.push(`<br key="${`br${i}`}" />`);
+
+          const id = printStyle({
+            flex: 1,
+            content: '""',
+            minWidth: '-webkit-fill-available'
+          });
+
+          content.push(`<br className="${id}" key="${`br${i}`}" />`);
+          middleStyle.flexWrap = 'wrap';
           continue;
         }
 

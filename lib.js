@@ -17,8 +17,9 @@ input:focus {
   outline: none;
 }
 .vector :global(svg) {
-  width: 100%;
-  height: 100%;
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
   position: absolute;
 }`;
 
@@ -588,7 +589,7 @@ function getDescriptionStyles({ componentDescriptionMap, options }, node) {
   return description.substring(description.indexOf(delimiter) + delimiter.length).replace(/\\n/g, `\n`);
 }
 
-async function createComponent(component, imgMap, componentMap, componentDescriptionMap, options = {}) {
+async function createComponent(component, imgMap, pngImages, componentMap, componentDescriptionMap, options = {}) {
   const name = getComponentName(component.name, options);
   const fileName = getFileName(name);
   const instance = getComponentInstance(component, options);
@@ -643,6 +644,7 @@ async function createComponent(component, imgMap, componentMap, componentDescrip
     printStyle,
     additionalStyles,
     imgMap,
+    pngImages,
     componentMap,
     componentDescriptionMap,
     localComponentMap,
@@ -696,12 +698,12 @@ async function createComponent(component, imgMap, componentMap, componentDescrip
   componentMap[name] = { instance, name, doc, fileName, localComponentMap };
 }
 
-async function createComponents(canvas, images, componentMap, componentDescriptionMap, options = {}) {
+async function createComponents(canvas, images, pngImages, componentMap, componentDescriptionMap, options = {}) {
   for (let i = 0; i < canvas.children.length; i++) {
     const child = canvas.children[i];
     if (child.name.charAt(0) === '#' && child.visible !== false) {
       const child = canvas.children[i];
-      await createComponent(child, images, componentMap, componentDescriptionMap, options);
+      await createComponent(child, images, pngImages, componentMap, componentDescriptionMap, options);
     }
   }
 }
