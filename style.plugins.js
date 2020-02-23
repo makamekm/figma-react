@@ -317,7 +317,8 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
 
     if (Object.keys(props).includes('input')) {
       const inputId = printStyle({
-        flex: 1
+        flex: 1,
+        height: '100%'
       });
       content.push(
         `<input key="${node.id}" className="${inputId}" type="${props.input || 'text'}" placeholder="${
