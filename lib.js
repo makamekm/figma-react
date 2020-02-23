@@ -30,7 +30,6 @@ module.exports = {
   dropShadow,
   innerShadow,
   imageURL,
-  backgroundSize,
   nodeSort,
   getPaint,
   paintToLinearGradient,
@@ -84,12 +83,6 @@ function imageURL(hash) {
   return `url(https://s3-us-west-2.amazonaws.com/figma-alpha/img/${squash.substring(0, 4)}/${squash.substring(4, 8)}/${squash.substring(
     8
   )})`;
-}
-
-function backgroundSize(scaleMode) {
-  if (scaleMode === 'FILL') {
-    return 'cover';
-  }
 }
 
 function nodeSort(a, b) {

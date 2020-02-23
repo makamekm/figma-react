@@ -1,14 +1,5 @@
-const {
-  colorString,
-  dropShadow,
-  innerShadow,
-  imageURL,
-  backgroundSize,
-  getPaint,
-  paintToLinearGradient,
-  paintToRadialGradient,
-  applyFontStyle
-} = require('./lib');
+const requestImageSize = require('request-image-size');
+const { colorString, dropShadow, innerShadow, getPaint, paintToLinearGradient, paintToRadialGradient, applyFontStyle } = require('./lib');
 
 const stylePlugins = [
   setMiddleOrder,
@@ -207,7 +198,8 @@ function setHorizontalLayout({ node, middleStyle, innerStyle, parent, classNames
   }
 }
 
-function setFrameStyles({ node, middleStyle }, { pngImages }) {
+async function setFrameStyles(state, { pngImages }) {
+  const { node, middleStyle } = state;
   if (['FRAME', 'RECTANGLE', 'INSTANCE', 'COMPONENT'].indexOf(node.type) >= 0) {
     if (['FRAME', 'COMPONENT', 'INSTANCE'].indexOf(node.type) >= 0) {
       middleStyle.backgroundColor = colorString(node.backgroundColor);
@@ -219,17 +211,24 @@ function setFrameStyles({ node, middleStyle }, { pngImages }) {
           middleStyle.backgroundColor = colorString(lastFill.color);
           middleStyle.opacity = lastFill.opacity;
         } else if (lastFill.type === 'IMAGE') {
+          const imageSize = await requestImageSize(pngImages[lastFill.imageRef]);
           middleStyle.backgroundImage = `url(${pngImages[lastFill.imageRef]})`;
-          middleStyle.backgroundSize = backgroundSize(lastFill.scaleMode);
-          // middleStyle.transform = `matrix(${[
-          //   lastFill.imageTransform[0][0],
-          //   lastFill.imageTransform[1][0],
-          //   lastFill.imageTransform[0][1],
-          //   lastFill.imageTransform[1][1],
-          //   lastFill.imageTransform[0][2],
-          //   lastFill.imageTransform[1][2]
-          // ].join(',')})`;
-          // console.log(middleStyle.transform);
+          middleStyle.backgroundPosition = 'center center';
+          middleStyle.backgroundRepeat = 'no-repeat';
+          if (lastFill.scaleMode === 'FILL') {
+            middleStyle.backgroundSize = 'cover';
+          } else if (lastFill.scaleMode === 'FIT') {
+            middleStyle.backgroundSize = 'contain';
+          } else if (lastFill.scaleMode === 'TILE') {
+            middleStyle.backgroundPosition = 'left top';
+            middleStyle.backgroundRepeat = 'repeat';
+            middleStyle.backgroundSize = `${lastFill.scalingFactor * imageSize.width}px ${lastFill.scalingFactor * imageSize.height}px`;
+          } else if (lastFill.scaleMode === 'STRETCH') {
+            middleStyle.backgroundRepeat = 'no-repeat';
+            middleStyle.backgroundSize = `${imageSize.width}px ${imageSize.height}px`;
+            middleStyle.backgroundPosition = `-${imageSize.width * lastFill.imageTransform[0][2]}px -${imageSize.height *
+              lastFill.imageTransform[1][2]}px`;
+          }
         } else if (lastFill.type === 'GRADIENT_LINEAR') {
           middleStyle.background = paintToLinearGradient(lastFill);
         } else if (lastFill.type === 'GRADIENT_RADIAL') {
