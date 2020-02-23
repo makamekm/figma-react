@@ -3,7 +3,7 @@ name: Node.js Public Release Notes
 on:
   push:
     tags:
-    - '*'
+    - 'test*'
 
 jobs:
   test_develop:
@@ -18,7 +18,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            return context.payload.ref.replace(/\/refs\/tags\//, '');
+            return context.payload.ref.replace(/refs\/tags\//, '');
       - name: send release notes
         uses: appleboy/telegram-action@master
         with:
