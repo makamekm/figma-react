@@ -67,8 +67,8 @@ async function runFigmaReact(options = {}) {
   const pngImages = await loadURLPNGImages(fileKey, headers);
 
   // Debug
-  const fs = require('fs');
-  fs.writeFileSync('./temp.json', JSON.stringify(canvas, null, 4));
+  // const fs = require('fs');
+  // fs.writeFileSync('./temp.json', JSON.stringify(canvas, null, 4));
 
   // Create components
   await createComponents(canvas, {
