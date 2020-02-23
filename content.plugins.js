@@ -23,12 +23,12 @@ function applyStyles(state) {
 // TODO: use import from './${getComponentName(node.name, options)}'
 async function setComponentFromCache(state, shared) {
   const { node, content, classNames } = state;
-  const { component, imgMap, componentMap, componentDescriptionMap, localComponentMap, options, additionalStyles, genClassName } = shared;
+  const { component, componentMap, localComponentMap, options, additionalStyles, genClassName } = shared;
   if (node.id !== component.id && node.name.charAt(0) === '#') {
     const name = getComponentName(node.name, options);
     emptyChildren(state);
     content.push(`<${name} {...props} nodeId='${node.id}' />`);
-    if (!componentMap[name]) await createComponent(node, imgMap, componentMap, componentDescriptionMap, options);
+    if (!componentMap[name]) await createComponent(node, shared);
     localComponentMap[name] = componentMap[name];
 
     const currentClass = genClassName();
@@ -47,11 +47,33 @@ async function setComponentFromCache(state, shared) {
   }
 }
 
-function renderVector(state, { imgMap }) {
+function renderVector(state, { imgMap, genClassName, additionalStyles }) {
   const { node, content } = state;
   if (node.type === 'VECTOR') {
     emptyChildren(state);
-    content.push(`<div className='vector' dangerouslySetInnerHTML={{__html: \`${imgMap[node.id]}\`}} />`);
+
+    const currentClass = genClassName();
+
+    const cHorizontal = node.constraints && node.constraints.horizontal;
+    const cVertical = node.constraints && node.constraints.vertical;
+
+    const scaleHorizontal = cHorizontal === 'LEFT_RIGHT' || cHorizontal === 'SCALE';
+    const scaleVertical = cVertical === 'TOP_BOTTOM' || cVertical === 'SCALE';
+
+    let additionalSvgStyles = `\n.${currentClass} > :global(svg) {\n`;
+    if (scaleHorizontal) additionalSvgStyles += `left: 0;\nwidth: 100%;\n`;
+    if (scaleVertical) additionalSvgStyles += `top: 0;\nheight: 100%;\n`;
+    if (scaleHorizontal && scaleVertical) {
+      additionalSvgStyles += `transform: unset;\n`;
+    } else if (scaleHorizontal && !scaleVertical) {
+      additionalSvgStyles += `transform: translateY(-50%);\n`;
+    } else if (!scaleHorizontal && scaleVertical) {
+      additionalSvgStyles += `transform: translateX(-50%);\n`;
+    }
+    additionalSvgStyles += `}\n`;
+    additionalStyles.push(additionalSvgStyles);
+
+    content.push(`<div className='vector ${currentClass}' dangerouslySetInnerHTML={{__html: \`${imgMap[node.id]}\`}} />`);
   }
 }
 

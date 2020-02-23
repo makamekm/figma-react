@@ -17,8 +17,9 @@ input:focus {
   outline: none;
 }
 .vector :global(svg) {
-  width: 100%;
-  height: 100%;
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
   position: absolute;
 }`;
 
@@ -29,7 +30,6 @@ module.exports = {
   dropShadow,
   innerShadow,
   imageURL,
-  backgroundSize,
   nodeSort,
   getPaint,
   paintToLinearGradient,
@@ -83,12 +83,6 @@ function imageURL(hash) {
   return `url(https://s3-us-west-2.amazonaws.com/figma-alpha/img/${squash.substring(0, 4)}/${squash.substring(4, 8)}/${squash.substring(
     8
   )})`;
-}
-
-function backgroundSize(scaleMode) {
-  if (scaleMode === 'FILL') {
-    return 'cover';
-  }
 }
 
 function nodeSort(a, b) {
@@ -588,7 +582,8 @@ function getDescriptionStyles({ componentDescriptionMap, options }, node) {
   return description.substring(description.indexOf(delimiter) + delimiter.length).replace(/\\n/g, `\n`);
 }
 
-async function createComponent(component, imgMap, componentMap, componentDescriptionMap, options = {}) {
+async function createComponent(component, parentShared) {
+  const { componentMap, options } = parentShared;
   const name = getComponentName(component.name, options);
   const fileName = getFileName(name);
   const instance = getComponentInstance(component, options);
@@ -631,6 +626,7 @@ async function createComponent(component, imgMap, componentMap, componentDescrip
   const path = `src/design-system/${fileName}.tsx`;
 
   const shared = {
+    ...parentShared,
     name,
     fileName,
     path,
@@ -642,13 +638,9 @@ async function createComponent(component, imgMap, componentMap, componentDescrip
     genClassName,
     printStyle,
     additionalStyles,
-    imgMap,
-    componentMap,
-    componentDescriptionMap,
     localComponentMap,
     stylePlugins: options.stylePlugins,
-    contentPlugins: options.contentPlugins,
-    options
+    contentPlugins: options.contentPlugins
   };
 
   print(`return (<>`);
@@ -696,12 +688,12 @@ async function createComponent(component, imgMap, componentMap, componentDescrip
   componentMap[name] = { instance, name, doc, fileName, localComponentMap };
 }
 
-async function createComponents(canvas, images, componentMap, componentDescriptionMap, options = {}) {
+async function createComponents(canvas, shared) {
   for (let i = 0; i < canvas.children.length; i++) {
     const child = canvas.children[i];
     if (child.name.charAt(0) === '#' && child.visible !== false) {
       const child = canvas.children[i];
-      await createComponent(child, images, componentMap, componentDescriptionMap, options);
+      await createComponent(child, shared);
     }
   }
 }

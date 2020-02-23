@@ -19,6 +19,7 @@ module.exports = {
     typeFactory: typeFactoryDefault,
     classAfterFix: 'Generated',
     fileAfterFix: '.generated',
+    useBase64Images: false,
     prettierOptions: {
       parser: 'typescript',
       semi: true,
@@ -44,6 +45,7 @@ module.exports = {
     typeFactory: typeFactoryDefault,
     classAfterFix: 'Generated',
     fileAfterFix: '.generated',
+    useBase64Images: false,
     prettierOptions: {
       parser: 'typescript',
       semi: true,

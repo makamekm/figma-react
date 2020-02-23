@@ -80,6 +80,7 @@ figmaReact.runFigmaReact(options).catch(err => {
 - decorator // default 'observer'
 - classAfterFix // default 'Generated'
 - fileAfterFix // default '.generated'
+- useBase64Images // default false
 - typeFactory // default ({ props: componentProps }) => `string`
 - prettierOptions // default
 ```
@@ -98,3 +99,4 @@ figmaReact.runFigmaReact(options).catch(err => {
 `npm link`
 
 This repository uses Git Flow
+

@@ -7,6 +7,7 @@ module.exports = {
   loadURLImages,
   loadImages,
   loadNodes,
+  loadURLPNGImages,
   getHeaders
 };
 
@@ -34,6 +35,12 @@ async function loadURLImages(vectorList, fileKey, headers) {
   const guids = vectorList.join(',');
   data = await fetch(`${baseUrl}/v1/images/${fileKey}?ids=${guids}&format=svg`, { headers });
   return await data.json();
+}
+
+async function loadURLPNGImages(fileKey, headers) {
+  data = await fetch(`${baseUrl}/v1/files/${fileKey}/images`, { headers });
+  const json = await data.json();
+  return json.meta.images;
 }
 
 async function loadImages(imageJSON) {

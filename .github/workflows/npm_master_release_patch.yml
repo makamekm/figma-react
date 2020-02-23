@@ -22,7 +22,40 @@ jobs:
           NODE_ENV: development
       - run: git config --global user.email "makame@mail.ru"
       - run: git config --global user.name "CICD"
+      - name: Temporarily disable "include administrators" branch protection
+        uses: makamekm/branch-protection-bot@master
+        if: always()
+        with:
+          access-token: ${{ secrets.GITHUB_TOKEN_CICD }}
+          enforce_admins: false
       - run: npm run release:patch
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN_CICD}}
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+      - name: Enable "include administrators" branch protection
+        uses: makamekm/branch-protection-bot@master
+        if: always()
+        with:
+          access-token: ${{ secrets.GITHUB_TOKEN_CICD }}
+          enforce_admins: true
+      - name: send a success message
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            Figma React - ${{ github.ref }}
+            SUCCESSFULLY - publish
+            Triggered by ${{ github.event_name }} event
+            https://github.com/makamekm/figma-react/actions/runs/${{ github.run_id }}
+      - name: send a fail message
+        uses: appleboy/telegram-action@master
+        if: failure()
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            Figma React - ${{ github.ref }}
+            FAILED - publish
+            Triggered by ${{ github.event_name }} event
+            https://github.com/makamekm/figma-react/actions/runs/${{ github.run_id }}
