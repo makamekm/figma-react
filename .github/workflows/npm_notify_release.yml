@@ -3,7 +3,7 @@ name: Node.js Public Release Notes
 on:
   push:
     tags:
-    - 'test*'
+    - 'v*'
 
 jobs:
   test_develop:
