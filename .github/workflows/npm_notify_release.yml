@@ -14,7 +14,7 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: Extract tag name
         id: tag
-        uses: actions/github-script@0.2.0
+        uses: actions/github-script@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           result-encoding: string
