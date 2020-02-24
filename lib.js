@@ -272,6 +272,8 @@ function createNodeBounds(node, parent, notFirst) {
     parentBounds.height = parent.size.y;
 
     const nodeBounds = { ...node.absoluteBoundingBox };
+    nodeBounds.x = nodeBounds.x + (nodeBounds.width - node.size.x) / 2;
+    nodeBounds.y = nodeBounds.y + (nodeBounds.height - node.size.y) / 2;
     nodeBounds.width = node.size.x;
     nodeBounds.height = node.size.y;
 
