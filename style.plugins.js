@@ -41,7 +41,9 @@ function setTransformation({ middleStyle, bounds, node }) {
 function setHorizontalAlign({ node, middleStyle, outerStyle, bounds }) {
   const cHorizontal = node.constraints && node.constraints.horizontal;
   middleStyle.debugH = cHorizontal;
-  if (bounds && bounds.width && cHorizontal !== 'LEFT_RIGHT' && cHorizontal !== 'SCALE') middleStyle.width = bounds.width;
+  if (bounds && bounds.width && cHorizontal !== 'LEFT_RIGHT' && cHorizontal !== 'SCALE') {
+    middleStyle.width = bounds.width;
+  }
   if (cHorizontal === 'LEFT_RIGHT') {
     if (bounds != null) {
       outerStyle.position = 'relative';
@@ -100,7 +102,9 @@ function setHorizontalAlign({ node, middleStyle, outerStyle, bounds }) {
 function setVerticalAlign({ node, middleStyle, outerStyle, bounds }) {
   const cVertical = node.constraints && node.constraints.vertical;
   middleStyle.debugV = cVertical;
-  if (bounds && bounds.height && cVertical !== 'TOP_BOTTOM') middleStyle.height = bounds.height;
+  if (bounds && bounds.height && cVertical !== 'TOP_BOTTOM') {
+    middleStyle.height = bounds.height;
+  }
   if (cVertical === 'TOP_BOTTOM') {
     outerStyle.width = '100%';
     outerStyle.pointerEvents = 'none';
