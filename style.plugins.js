@@ -250,10 +250,20 @@ async function setFrameStyles(state, { pngImages, headers, options }) {
         for (let i = 0; i < node.effects.length; i++) {
           const effect = node.effects[i];
           if (effect.type === 'DROP_SHADOW') {
-            middleStyle.boxShadow = dropShadow(effect);
-          } else if (effect.type === 'INNER_SHADOW') {
-            middleStyle.boxShadow = innerShadow(effect);
-          } else if (effect.type === 'LAYER_BLUR') {
+            if (Object.keys(props).includes('filterShadow')) {
+              middleStyle.filter = `drop-shadow(${dropShadow(effect)})`;
+            } else {
+              middleStyle.boxShadow = dropShadow(effect);
+            }
+          }
+          if (effect.type === 'INNER_SHADOW') {
+            if (Object.keys(props).includes('filterShadow')) {
+              middleStyle.filter = `drop-shadow(${innerShadow(effect)})`;
+            } else {
+              middleStyle.boxShadow = innerShadow(effect);
+            }
+          }
+          if (effect.type === 'LAYER_BLUR') {
             middleStyle.filter = `blur(${effect.radius}px)`;
           }
         }
