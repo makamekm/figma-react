@@ -168,6 +168,15 @@ function applyFontStyle(_styles, fontStyle) {
   if (fontStyle) {
     _styles.fontSize = fontStyle.fontSize;
     _styles.fontWeight = fontStyle.fontWeight;
+    if (fontStyle.textCase === 'UPPER') {
+      _styles.textTransform = 'uppercase';
+    }
+    if (fontStyle.textCase === 'LOWER') {
+      _styles.textTransform = 'lowercase';
+    }
+    if (fontStyle.textCase === 'TITLE') {
+      _styles.textTransform = 'capitalize';
+    }
     _styles.fontFamily = fontStyle.fontFamily;
     _styles.textAlign = fontStyle.textAlignHorizontal;
     _styles.fontStyle = fontStyle.italic ? 'italic' : 'normal';
@@ -301,10 +310,12 @@ function createNodeBounds(node, parent, notFirst) {
 function printDiv({ node, increaseDivCounter, middleStyle, outerStyle, innerStyle, nodeProps, classNames }, { printStyle, print }) {
   if (Object.keys(outerStyle).length > 0 && middleStyle.zIndex != null) {
     outerStyle.zIndex = middleStyle.zIndex;
+    outerStyle.pointerEvents = 'none';
   }
 
   if (Object.keys(innerStyle).length > 0 && middleStyle.zIndex != null) {
     innerStyle.zIndex = middleStyle.zIndex;
+    innerStyle.pointerEvents = 'none';
   }
 
   const middleId = printStyle(middleStyle);

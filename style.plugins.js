@@ -203,84 +203,95 @@ function setHorizontalLayout({ node, middleStyle, innerStyle, parent, classNames
 
 async function setFrameStyles(state, { pngImages, headers, options }) {
   const { node, middleStyle, props } = state;
-  if (['FRAME', 'RECTANGLE', 'INSTANCE', 'COMPONENT'].indexOf(node.type) >= 0) {
-    if (['FRAME', 'COMPONENT', 'INSTANCE'].indexOf(node.type) >= 0) {
+  if (['FRAME', 'RECTANGLE', 'INSTANCE', 'COMPONENT'].includes(node.type)) {
+    if (node.backgroundColor) {
       middleStyle.backgroundColor = colorString(node.backgroundColor);
-      if (node.clipsContent) middleStyle.overflow = 'hidden';
-    } else if (node.type === 'RECTANGLE') {
-      // TODO: Foreach fills
-      const lastFill = getPaint(node.fills);
-      if (lastFill && lastFill.visible !== false) {
-        if (lastFill.type === 'SOLID') {
-          middleStyle.backgroundColor = colorString(lastFill.color);
-          middleStyle.opacity = lastFill.opacity;
-        } else if (lastFill.type === 'IMAGE') {
-          const imageSize = await requestImageSize(pngImages[lastFill.imageRef]);
-          if (options.useBase64Images || Object.keys(props).includes('useBase64')) {
-            const imageRequest = await fetch(pngImages[lastFill.imageRef], { headers });
-            const imageBuffer = await imageRequest.buffer();
-            const imageDataURL = `data:${imageRequest.headers.get('content-type')};base64,${imageBuffer.toString('base64')}`;
-            middleStyle.backgroundImage = `url(${imageDataURL})`;
-          } else {
-            middleStyle.backgroundImage = `url(${pngImages[lastFill.imageRef]})`;
-          }
-          middleStyle.backgroundPosition = 'center center';
+    }
+
+    if (node.clipsContent) middleStyle.overflow = 'hidden';
+    const lastFill = getPaint(node.fills);
+    if (lastFill && lastFill.visible !== false) {
+      if (lastFill.type === 'SOLID') {
+        middleStyle.backgroundColor = colorString(lastFill.color);
+        middleStyle.opacity = lastFill.opacity;
+      } else if (lastFill.type === 'IMAGE') {
+        const imageSize = await requestImageSize(pngImages[lastFill.imageRef]);
+        if (options.useBase64Images || Object.keys(props).includes('useBase64')) {
+          const imageRequest = await fetch(pngImages[lastFill.imageRef], { headers });
+          const imageBuffer = await imageRequest.buffer();
+          const imageDataURL = `data:${imageRequest.headers.get('content-type')};base64,${imageBuffer.toString('base64')}`;
+          middleStyle.backgroundImage = `url(${imageDataURL})`;
+        } else {
+          middleStyle.backgroundImage = `url(${pngImages[lastFill.imageRef]})`;
+        }
+        middleStyle.backgroundPosition = 'center center';
+        middleStyle.backgroundRepeat = 'no-repeat';
+        if (lastFill.scaleMode === 'FILL') {
+          middleStyle.backgroundSize = 'cover';
+        } else if (lastFill.scaleMode === 'FIT') {
+          middleStyle.backgroundSize = 'contain';
+        } else if (lastFill.scaleMode === 'TILE') {
+          middleStyle.backgroundPosition = 'left top';
+          middleStyle.backgroundRepeat = 'repeat';
+          middleStyle.backgroundSize = `${lastFill.scalingFactor * imageSize.width}px ${lastFill.scalingFactor * imageSize.height}px`;
+        } else if (lastFill.scaleMode === 'STRETCH') {
           middleStyle.backgroundRepeat = 'no-repeat';
-          if (lastFill.scaleMode === 'FILL') {
-            middleStyle.backgroundSize = 'cover';
-          } else if (lastFill.scaleMode === 'FIT') {
-            middleStyle.backgroundSize = 'contain';
-          } else if (lastFill.scaleMode === 'TILE') {
-            middleStyle.backgroundPosition = 'left top';
-            middleStyle.backgroundRepeat = 'repeat';
-            middleStyle.backgroundSize = `${lastFill.scalingFactor * imageSize.width}px ${lastFill.scalingFactor * imageSize.height}px`;
-          } else if (lastFill.scaleMode === 'STRETCH') {
-            middleStyle.backgroundRepeat = 'no-repeat';
-            middleStyle.backgroundSize = 'cover';
-            middleStyle.backgroundPosition = `${100 * lastFill.imageTransform[0][2]}% ${100 * lastFill.imageTransform[1][2]}%`;
-          }
-        } else if (lastFill.type === 'GRADIENT_LINEAR') {
-          middleStyle.background = paintToLinearGradient(lastFill);
-        } else if (lastFill.type === 'GRADIENT_RADIAL') {
-          middleStyle.background = paintToRadialGradient(lastFill);
+          middleStyle.backgroundSize = 'cover';
+          middleStyle.backgroundPosition = `${100 * lastFill.imageTransform[0][2]}% ${100 * lastFill.imageTransform[1][2]}%`;
         }
+      } else if (lastFill.type === 'GRADIENT_LINEAR') {
+        middleStyle.background = paintToLinearGradient(lastFill);
+      } else if (lastFill.type === 'GRADIENT_RADIAL') {
+        middleStyle.background = paintToRadialGradient(lastFill);
       }
+    }
 
-      if (node.effects) {
-        for (let i = 0; i < node.effects.length; i++) {
-          const effect = node.effects[i];
-          if (effect.type === 'DROP_SHADOW') {
-            if (Object.keys(props).includes('filterShadow')) {
-              middleStyle.filter = `drop-shadow(${dropShadow(effect)})`;
-            } else {
-              middleStyle.boxShadow = dropShadow(effect);
-            }
-          }
-          if (effect.type === 'INNER_SHADOW') {
-            if (Object.keys(props).includes('filterShadow')) {
-              middleStyle.filter = `drop-shadow(${innerShadow(effect)})`;
-            } else {
-              middleStyle.boxShadow = innerShadow(effect);
-            }
-          }
-          if (effect.type === 'LAYER_BLUR') {
-            middleStyle.filter = `blur(${effect.radius}px)`;
+    if (node.effects) {
+      for (let i = 0; i < node.effects.length; i++) {
+        const effect = node.effects[i];
+
+        if (effect.visible === false) {
+          continue;
+        }
+
+        const prevFilter = `${middleStyle.filter ? ', ' : ''}`;
+        const prevBoxShadow = `${middleStyle.boxShadow ? ', ' : ''}`;
+        const prevBackdropFilter = `${middleStyle.backdropFilter ? ', ' : ''}`;
+
+        if (effect.type === 'DROP_SHADOW') {
+          if (Object.keys(props).includes('filterShadow')) {
+            middleStyle.filter = `${prevFilter}drop-shadow(${dropShadow(effect)})`;
+          } else {
+            middleStyle.boxShadow = `${prevBoxShadow}${dropShadow(effect)}`;
           }
         }
-      }
-
-      const lastStroke = getPaint(node.strokes);
-      if (lastStroke) {
-        if (lastStroke.type === 'SOLID') {
-          const weight = node.strokeWeight || 1;
-          middleStyle.border = `${weight}px solid ${colorString(lastStroke.color)}`;
+        if (effect.type === 'INNER_SHADOW') {
+          if (Object.keys(props).includes('filterShadow')) {
+            middleStyle.filter = `${prevFilter}drop-shadow(${innerShadow(effect)})`;
+          } else {
+            middleStyle.boxShadow = `${prevBoxShadow}${innerShadow(effect)}`;
+          }
+        }
+        if (effect.type === 'LAYER_BLUR') {
+          middleStyle.filter = `${prevFilter}blur(${effect.radius}px)`;
+        }
+        if (effect.type === 'BACKGROUND_BLUR') {
+          middleStyle.backdropFilter = `${prevBackdropFilter}blur(${effect.radius}px)`;
         }
       }
+    }
 
-      const cornerRadii = node.rectangleCornerRadii;
-      if (cornerRadii && cornerRadii.length === 4 && cornerRadii[0] + cornerRadii[1] + cornerRadii[2] + cornerRadii[3] > 0) {
-        middleStyle.borderRadius = `${cornerRadii[0]}px ${cornerRadii[1]}px ${cornerRadii[2]}px ${cornerRadii[3]}px`;
+    const lastStroke = getPaint(node.strokes);
+    if (lastStroke) {
+      if (lastStroke.type === 'SOLID') {
+        const weight = node.strokeWeight || 1;
+        middleStyle.border = `${weight}px solid ${colorString(lastStroke.color)}`;
       }
+    }
+
+    const cornerRadii = node.rectangleCornerRadii;
+    if (cornerRadii && cornerRadii.length === 4 && cornerRadii[0] + cornerRadii[1] + cornerRadii[2] + cornerRadii[3] > 0) {
+      middleStyle.borderRadius = `${cornerRadii[0]}px ${cornerRadii[1]}px ${cornerRadii[2]}px ${cornerRadii[3]}px`;
     }
   }
 }
@@ -325,6 +336,34 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
       middleStyle.verticalAlign = 'bottom';
       middleStyle.alignItems = 'flex-end';
       middleStyle.alignContent = 'flex-end';
+    }
+
+    if (node.effects) {
+      for (let i = 0; i < node.effects.length; i++) {
+        const effect = node.effects[i];
+
+        if (effect.visible === false) {
+          continue;
+        }
+
+        const prevFilter = `${middleStyle.filter ? ', ' : ''}`;
+        const prevBoxShadow = `${middleStyle.boxShadow ? ', ' : ''}`;
+
+        if (effect.type === 'DROP_SHADOW') {
+          if (Object.keys(props).includes('filterShadow')) {
+            middleStyle.filter = `${prevFilter}drop-shadow(${dropShadow(effect)})`;
+          } else {
+            middleStyle.textShadow = `${prevBoxShadow}${dropShadow(effect)}`;
+          }
+        }
+        if (effect.type === 'INNER_SHADOW') {
+          if (Object.keys(props).includes('filterShadow')) {
+            middleStyle.filter = `${prevFilter}drop-shadow(${innerShadow(effect)})`;
+          } else {
+            middleStyle.textShadow = `${prevBoxShadow}${innerShadow(effect)}`;
+          }
+        }
+      }
     }
 
     if (Object.keys(props).includes('input')) {
