@@ -290,10 +290,6 @@ function createNodeBounds(node, parent, notFirst) {
 
     const angle = getNodeAngle(node);
 
-    if (node.name === 'SS' || node.name === 'school') {
-      console.log(node.name, notFirst);
-    }
-
     const shouldHaveNegativeMargin = notFirst;
     const topFirst = nodeBounds.y - (parentBounds.y + parentBounds.height);
     const topNotFirst = nodeBounds.y - parentBounds.y;
