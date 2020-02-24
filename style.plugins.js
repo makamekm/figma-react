@@ -205,7 +205,8 @@ function setHorizontalLayout({ node, middleStyle, innerStyle, parent, classNames
   }
 }
 
-async function setFrameStyles(state, { pngImages, headers, options }) {
+async function setFrameStyles(state, { pngImages, images, headers, options }) {
+  console.log(images[node.id]);
   const { node, middleStyle, props } = state;
   if (['FRAME', 'RECTANGLE', 'INSTANCE', 'COMPONENT'].includes(node.type)) {
     if (node.backgroundColor) {

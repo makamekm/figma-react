@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 const { preprocessCanvasComponents, createComponents, generateComponent } = require('./lib');
-const { loadCanvas, loadNodes, loadImages, loadURLImages, loadURLPNGImages, getHeaders } = require('./api');
+const { loadCanvas, loadNodes, loadImages, loadURLImages, loadURLPNGImages, loadPNGImages, getHeaders } = require('./api');
 const presets = require('./presets');
 
 function getConfig(options = {}) {
@@ -34,6 +34,7 @@ async function runFigmaReact(options = {}) {
 
   // Create shared objects
   const vectorMap = {};
+  const imageMap = {};
   const componentMap = {};
   const componentDescriptionMap = {};
   const vectorList = [];
@@ -42,6 +43,7 @@ async function runFigmaReact(options = {}) {
     componentMap,
     componentDescriptionMap,
     vectorMap,
+    imageMap,
     vectorList,
     options,
     fileKey,
@@ -65,6 +67,7 @@ async function runFigmaReact(options = {}) {
   const imageJSON = await loadURLImages(vectorList, fileKey, headers);
   const imgMap = await loadImages(imageJSON, fileKey, headers);
   const pngImages = await loadURLPNGImages(fileKey, headers);
+  const images = await loadPNGImages(Object.keys(imageMap), fileKey, headers);
 
   // Debug
   // const fs = require('fs');
@@ -76,6 +79,7 @@ async function runFigmaReact(options = {}) {
     headers,
     imgMap,
     pngImages,
+    images,
     componentMap,
     componentDescriptionMap,
     options
