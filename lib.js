@@ -168,10 +168,19 @@ function applyFontStyle(_styles, fontStyle) {
   if (fontStyle) {
     _styles.fontSize = fontStyle.fontSize;
     _styles.fontWeight = fontStyle.fontWeight;
+    if (fontStyle.textCase === 'UPPER') {
+      _styles.textTransform = 'uppercase';
+    }
+    if (fontStyle.textCase === 'LOWER') {
+      _styles.textTransform = 'lowercase';
+    }
+    if (fontStyle.textCase === 'TITLE') {
+      _styles.textTransform = 'capitalize';
+    }
     _styles.fontFamily = fontStyle.fontFamily;
     _styles.textAlign = fontStyle.textAlignHorizontal;
     _styles.fontStyle = fontStyle.italic ? 'italic' : 'normal';
-    _styles.lineHeight = `${fontStyle.lineHeightPercent * 1.25}%`;
+    _styles.lineHeight = `${fontStyle.lineHeightPercentFontSize}%`;
     _styles.letterSpacing = `${fontStyle.letterSpacing}px`;
   }
 }
@@ -256,40 +265,40 @@ function getElementParams(name, options = {}) {
   return params;
 }
 
+function getNodeOriginalBounds(node) {
+  const nodeBounds = { ...node.absoluteBoundingBox };
+  nodeBounds.x = nodeBounds.x + (nodeBounds.width - node.size.x) / 2;
+  nodeBounds.y = nodeBounds.y + (nodeBounds.height - node.size.y) / 2;
+  nodeBounds.width = node.size.x;
+  nodeBounds.height = node.size.y;
+  return nodeBounds;
+}
+
+function getNodeAngle(node) {
+  let angle = 0;
+  if (node.relativeTransform) {
+    const [[m00, m01, m02], [m10, m11, m12]] = node.relativeTransform;
+    angle += Math.atan2(-m10, m00) * (180 / Math.PI);
+  }
+  return angle;
+}
+
 function createNodeBounds(node, parent, notFirst) {
   if (parent != null) {
-    const parentBounds = { ...parent.absoluteBoundingBox };
-    parentBounds.width = parent.size.x;
-    parentBounds.height = parent.size.y;
+    const parentBounds = getNodeOriginalBounds(parent);
+    const nodeBounds = getNodeOriginalBounds(node);
 
-    const nodeBounds = { ...node.absoluteBoundingBox };
-    nodeBounds.width = node.size.x;
-    nodeBounds.height = node.size.y;
+    const angle = getNodeAngle(node);
 
-    let angle = 0;
-    if (node.relativeTransform) {
-      const [[m00, m01, m02], [m10, m11, m12]] = node.relativeTransform;
-      angle += Math.atan2(-m10, m00) * (180 / Math.PI);
-    }
-
-    const nx2 = nodeBounds.x + nodeBounds.width;
-    const ny2 = nodeBounds.y + nodeBounds.height;
-
-    const px = parentBounds.x;
-    const py = parentBounds.y;
+    const shouldHaveNegativeMargin = notFirst;
+    const topFirst = nodeBounds.y - (parentBounds.y + parentBounds.height);
+    const topNotFirst = nodeBounds.y - parentBounds.y;
 
     return {
-      xCenter: (px + parentBounds.width - nx2 - (nodeBounds.x - px)) / 2,
-      yCenter:
-        (py +
-          parentBounds.height -
-          ny2 -
-          (notFirst && parent.absoluteBoundingBox ? nodeBounds.y - (parentBounds.y + parentBounds.height) : nodeBounds.y - py)) /
-        2,
-      left: nodeBounds.x - px,
-      right: px + parentBounds.width - nx2,
-      top: notFirst && parent.absoluteBoundingBox ? nodeBounds.y - (parentBounds.y + parentBounds.height) : nodeBounds.y - py,
-      bottom: py + parentBounds.height - ny2,
+      left: nodeBounds.x - parentBounds.x,
+      right: parentBounds.x + parentBounds.width - (nodeBounds.x + nodeBounds.width),
+      top: shouldHaveNegativeMargin ? topFirst : topNotFirst,
+      bottom: parentBounds.y + parentBounds.height - (nodeBounds.y + nodeBounds.height),
       width: nodeBounds.width,
       height: nodeBounds.height,
       angle
@@ -301,10 +310,12 @@ function createNodeBounds(node, parent, notFirst) {
 function printDiv({ node, increaseDivCounter, middleStyle, outerStyle, innerStyle, nodeProps, classNames }, { printStyle, print }) {
   if (Object.keys(outerStyle).length > 0 && middleStyle.zIndex != null) {
     outerStyle.zIndex = middleStyle.zIndex;
+    outerStyle.pointerEvents = 'none';
   }
 
   if (Object.keys(innerStyle).length > 0 && middleStyle.zIndex != null) {
     innerStyle.zIndex = middleStyle.zIndex;
+    innerStyle.pointerEvents = 'none';
   }
 
   const middleId = printStyle(middleStyle);
