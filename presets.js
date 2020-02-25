@@ -19,7 +19,6 @@ module.exports = {
     typeFactory: typeFactoryDefault,
     classAfterFix: 'Generated',
     fileAfterFix: '.generated',
-    useBase64Images: false,
     prettierOptions: {
       parser: 'typescript',
       semi: true,
@@ -27,7 +26,11 @@ module.exports = {
       printWidth: 140,
       singleQuote: true,
       trailingComma: 'none'
-    }
+    },
+    imageFormat: 'png',
+    imageDir: './static/images',
+    imageUrlPrefix: '/images/',
+    imageScale: 2
   },
   mobx: {
     dir: './src/design-system',
@@ -45,7 +48,6 @@ module.exports = {
     typeFactory: typeFactoryDefault,
     classAfterFix: 'Generated',
     fileAfterFix: '.generated',
-    useBase64Images: false,
     prettierOptions: {
       parser: 'typescript',
       semi: true,
@@ -53,6 +55,10 @@ module.exports = {
       printWidth: 140,
       singleQuote: true,
       trailingComma: 'none'
-    }
+    },
+    imageFormat: 'png',
+    imageDir: './static/images',
+    imageUrlPrefix: '/images/',
+    imageScale: 2
   }
 };
