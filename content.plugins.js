@@ -47,9 +47,9 @@ async function setComponentFromCache(state, shared) {
   }
 }
 
-function renderVector(state, { imgMap, genClassName, additionalStyles }) {
+function renderVector(state, { vectors, genClassName, additionalStyles }) {
   const { node, content } = state;
-  if (node.type === 'VECTOR' && imgMap[node.id]) {
+  if (node.type === 'VECTOR' && vectors[node.id]) {
     emptyChildren(state);
 
     const currentClass = genClassName();
@@ -73,7 +73,7 @@ function renderVector(state, { imgMap, genClassName, additionalStyles }) {
     additionalSvgStyles += `}\n`;
     additionalStyles.push(additionalSvgStyles);
 
-    content.push(`<div className='vector ${currentClass}' dangerouslySetInnerHTML={{__html: \`${imgMap[node.id]}\`}} />`);
+    content.push(`<div className='vector ${currentClass}' dangerouslySetInnerHTML={{__html: \`${vectors[node.id]}\`}} />`);
   }
 }
 

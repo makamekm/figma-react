@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 const { preprocessCanvasComponents, createComponents, generateComponent } = require('./lib');
-const { loadCanvas, loadNodes, loadImages, loadURLImages, loadURLPNGImages, getHeaders } = require('./api');
+const { loadCanvas, loadNodes, loadVectors, loadRefImages, loadNodeImages, getHeaders } = require('./api');
 const presets = require('./presets');
 
 function getConfig(options = {}) {
@@ -34,15 +34,15 @@ async function runFigmaReact(options = {}) {
 
   // Create shared objects
   const vectorMap = {};
+  const imageMap = {};
   const componentMap = {};
   const componentDescriptionMap = {};
-  const vectorList = [];
 
   const shared = {
     componentMap,
     componentDescriptionMap,
     vectorMap,
-    vectorList,
+    imageMap,
     options,
     fileKey,
     headers
@@ -62,24 +62,16 @@ async function runFigmaReact(options = {}) {
   }
 
   // Load all images used in the document from Figma
-  const imageJSON = await loadURLImages(vectorList, fileKey, headers);
-  const imgMap = await loadImages(imageJSON, fileKey, headers);
-  const pngImages = await loadURLPNGImages(fileKey, headers);
+  shared.vectors = await loadVectors(shared);
+  shared.refImages = await loadRefImages(shared);
+  shared.images = await loadNodeImages(shared);
 
   // Debug
   // const fs = require('fs');
   // fs.writeFileSync('./temp.json', JSON.stringify(canvas, null, 4));
 
   // Create components
-  await createComponents(canvas, {
-    fileKey,
-    headers,
-    imgMap,
-    pngImages,
-    componentMap,
-    componentDescriptionMap,
-    options
-  });
+  await createComponents(canvas, shared);
 
   // Generate components
   for (const key in componentMap) {

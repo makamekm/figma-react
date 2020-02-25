@@ -1,6 +1,15 @@
 const requestImageSize = require('request-image-size');
-const fetch = require('node-fetch');
-const { colorString, dropShadow, innerShadow, getPaint, paintToLinearGradient, paintToRadialGradient, applyFontStyle } = require('./lib');
+const {
+  colorString,
+  dropShadow,
+  innerShadow,
+  getPaint,
+  paintToLinearGradient,
+  paintToRadialGradient,
+  applyFontStyle,
+  loadImageFromImagesToDisk,
+  loadImageFromRefImagesToDisk
+} = require('./lib');
 
 const stylePlugins = [
   setMiddleOrder,
@@ -205,48 +214,87 @@ function setHorizontalLayout({ node, middleStyle, innerStyle, parent, classNames
   }
 }
 
-async function setFrameStyles(state, { pngImages, headers, options }) {
-  const { node, middleStyle, props } = state;
+async function setFrameStyles(state, shared) {
+  const { refImages, images, genClassName, additionalStyles } = shared;
+  const { node, middleStyle, props, bounds, classNames } = state;
+
+  const addBackground = (value, size) => {
+    middleStyle.background = `${middleStyle.background ? `${middleStyle.background}, ` : ''}${value}`;
+    middleStyle.backgroundSize = `${middleStyle.backgroundSize ? `${middleStyle.backgroundSize}, ` : ''}${size || 'auto'}`;
+  };
+
   if (['FRAME', 'RECTANGLE', 'INSTANCE', 'COMPONENT'].includes(node.type)) {
-    if (node.backgroundColor) {
-      middleStyle.backgroundColor = colorString(node.backgroundColor);
+    const fills = node.fills.reduce((arr, fill) => {
+      if (fill.visible !== false) {
+        arr.unshift(fill);
+      }
+      return arr;
+    }, []);
+
+    if (node.clipsContent) {
+      middleStyle.overflow = 'hidden';
     }
 
-    if (node.clipsContent) middleStyle.overflow = 'hidden';
-    const lastFill = getPaint(node.fills);
-    if (lastFill && lastFill.visible !== false) {
-      if (lastFill.type === 'SOLID') {
-        middleStyle.backgroundColor = colorString(lastFill.color);
-        middleStyle.opacity = lastFill.opacity;
-      } else if (lastFill.type === 'IMAGE') {
-        const imageSize = await requestImageSize(pngImages[lastFill.imageRef]);
-        if (options.useBase64Images || Object.keys(props).includes('useBase64')) {
-          const imageRequest = await fetch(pngImages[lastFill.imageRef], { headers });
-          const imageBuffer = await imageRequest.buffer();
-          const imageDataURL = `data:${imageRequest.headers.get('content-type')};base64,${imageBuffer.toString('base64')}`;
-          middleStyle.backgroundImage = `url(${imageDataURL})`;
-        } else {
-          middleStyle.backgroundImage = `url(${pngImages[lastFill.imageRef]})`;
+    if (node.backgroundColor) {
+      const color = colorString(node.backgroundColor);
+      addBackground(`linear-gradient(to bottom, ${color} 0%, ${color} 100%)`);
+    }
+
+    if (images[node.id] != null && !Object.keys(props).includes('generateBG')) {
+      const url = `url(${await loadImageFromImagesToDisk(node, shared)})`;
+
+      if (bounds && Math.abs(bounds.angle) > 0) {
+        const afterId = genClassName();
+        classNames.push(afterId);
+        additionalStyles.push(`
+          .${afterId}::after {
+            position: absolute;
+            pointer-events: none;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            height: 100%;
+            width: 100%;
+            content: '';
+            background: ${url} center center no-repeat;
+            background-size: cover;
+            ${bounds && Math.abs(bounds.angle) > 0 ? `transform: rotate(${bounds.angle}deg);` : ''}
+            transform-origin: 50% 50%;
+          }
+        `);
+      } else {
+        addBackground(`${url} center center no-repeat`, 'cover');
+      }
+    } else {
+      for (let fill of fills) {
+        if (fill.type === 'SOLID') {
+          const color = colorString(fill.color, fill.opacity);
+          addBackground(`linear-gradient(to bottom, ${color} 0%, ${color} 100%)`);
         }
-        middleStyle.backgroundPosition = 'center center';
-        middleStyle.backgroundRepeat = 'no-repeat';
-        if (lastFill.scaleMode === 'FILL') {
-          middleStyle.backgroundSize = 'cover';
-        } else if (lastFill.scaleMode === 'FIT') {
-          middleStyle.backgroundSize = 'contain';
-        } else if (lastFill.scaleMode === 'TILE') {
-          middleStyle.backgroundPosition = 'left top';
-          middleStyle.backgroundRepeat = 'repeat';
-          middleStyle.backgroundSize = `${lastFill.scalingFactor * imageSize.width}px ${lastFill.scalingFactor * imageSize.height}px`;
-        } else if (lastFill.scaleMode === 'STRETCH') {
-          middleStyle.backgroundRepeat = 'no-repeat';
-          middleStyle.backgroundSize = 'cover';
-          middleStyle.backgroundPosition = `${100 * lastFill.imageTransform[0][2]}% ${100 * lastFill.imageTransform[1][2]}%`;
+
+        if (fill.type === 'IMAGE' && refImages[fill.imageRef] != null) {
+          const url = `url(${await loadImageFromRefImagesToDisk(fill.imageRef, shared)})`;
+          const imageSize = await requestImageSize(refImages[fill.imageRef]);
+
+          if (fill.scaleMode === 'FILL') {
+            addBackground(`${url} center center no-repeat`, 'cover');
+          } else if (fill.scaleMode === 'FIT') {
+            addBackground(`${url} center center no-repeat`, 'contain');
+          } else if (fill.scaleMode === 'TILE') {
+            addBackground(`${url} left top repeat`, `${fill.scalingFactor * imageSize.width}px ${fill.scalingFactor * imageSize.height}px`);
+          } else if (fill.scaleMode === 'STRETCH') {
+            addBackground(`${url} ${100 * fill.imageTransform[0][2]}% ${100 * fill.imageTransform[1][2]}% no-repeat`, 'cover');
+          }
         }
-      } else if (lastFill.type === 'GRADIENT_LINEAR') {
-        middleStyle.background = paintToLinearGradient(lastFill);
-      } else if (lastFill.type === 'GRADIENT_RADIAL') {
-        middleStyle.background = paintToRadialGradient(lastFill);
+
+        if (fill.type === 'GRADIENT_LINEAR') {
+          addBackground(paintToLinearGradient(fill));
+        }
+
+        if (fill.type === 'GRADIENT_RADIAL') {
+          addBackground(paintToRadialGradient(fill));
+        }
       }
     }
 
