@@ -511,17 +511,17 @@ function paintsRequireRender(paints) {
 function preprocessTree(node, shared) {
   const { vectorMap, imageMap } = shared;
 
-  // let vectorsOnly = node.name.charAt(0) !== '#';
+  let vectorsOnly = node.name.charAt(0) !== '#';
   let vectorVConstraint = null;
   let vectorHConstraint = null;
 
-  // if (
-  //   paintsRequireRender(node.fills) ||
-  //   paintsRequireRender(node.strokes) ||
-  //   (node.blendMode != null && ['PASS_THROUGH', 'NORMAL'].indexOf(node.blendMode) < 0)
-  // ) {
-  //   node.type = 'VECTOR';
-  // }
+  if (
+    paintsRequireRender(node.fills) ||
+    paintsRequireRender(node.strokes) ||
+    (node.blendMode != null && ['PASS_THROUGH', 'NORMAL'].indexOf(node.blendMode) < 0)
+  ) {
+    node.type = 'VECTOR';
+  }
 
   const children = node.children && node.children.filter(child => child.visible !== false);
   if (children) {
@@ -537,13 +537,13 @@ function preprocessTree(node, shared) {
   }
   node.children = children;
 
-  // if (children && children.length > 0 && vectorsOnly) {
-  //   node.type = 'VECTOR';
-  //   node.constraints = {
-  //     vertical: vectorVConstraint,
-  //     horizontal: vectorHConstraint
-  //   };
-  // }
+  if (children && children.length > 0 && vectorsOnly) {
+    node.type = 'VECTOR';
+    node.constraints = {
+      vertical: vectorVConstraint,
+      horizontal: vectorHConstraint
+    };
+  }
 
   if (VECTOR_TYPES.includes(node.type)) {
     node.type = 'VECTOR';
