@@ -423,7 +423,11 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
         height: '100%'
       });
       content.push(
-        `<input key="${node.id}" className="${inputId}" type="${props.input || 'text'}" placeholder="${
+        `<input
+        key="${node.id}"
+        className="${inputId}"
+        type="${props.input
+          || 'text'}" placeholder="${
           node.characters
         }" name="${node.name.substring(7)}" />`
       );
