@@ -224,18 +224,9 @@ async function setFrameStyles(state, shared) {
   };
 
   if (['FRAME', 'RECTANGLE', 'INSTANCE', 'COMPONENT'].includes(node.type)) {
-    let hasSolid = false;
-
     const fills = node.fills.reduce((arr, fill) => {
       if (fill.visible !== false) {
-        if (fill.type === 'SOLID') {
-          if (hasSolid === false) {
-            hasSolid = true;
-            arr.unshift(fill);
-          }
-        } else {
-          arr.unshift(fill);
-        }
+        arr.unshift(fill);
       }
       return arr;
     }, []);
@@ -244,11 +235,11 @@ async function setFrameStyles(state, shared) {
       middleStyle.overflow = 'hidden';
     }
 
-    if (images[node.id] != null && !Object.keys(props).includes('generateBG')) {
-      if (node.backgroundColor) {
-        addBackground(colorString(node.backgroundColor));
-      }
+    if (node.backgroundColor) {
+      addBackground(`linear-gradient(to bottom, ${colorString(node.backgroundColor)} 0%, ${colorString(node.backgroundColor)} 100%)`);
+    }
 
+    if (images[node.id] != null && !Object.keys(props).includes('generateBG')) {
       const url = `url(${await loadImageFromImagesToDisk(node, shared)})`;
 
       if (bounds && Math.abs(bounds.angle) > 0) {
@@ -275,13 +266,11 @@ async function setFrameStyles(state, shared) {
         addBackground(`${url} center center no-repeat`, 'cover');
       }
     } else {
-      if (node.backgroundColor && !hasSolid) {
-        addBackground(colorString(node.backgroundColor));
-      }
-
       for (let fill of fills) {
         if (fill.type === 'SOLID') {
-          addBackground(colorString(fill.color, fill.opacity));
+          addBackground(
+            `linear-gradient(to bottom, ${colorString(fill.color, fill.opacity)} 0%, ${colorString(fill.color, fill.opacity)} 100%)`
+          );
         }
 
         if (fill.type === 'IMAGE' && refImages[fill.imageRef] != null) {
