@@ -236,7 +236,8 @@ async function setFrameStyles(state, shared) {
     }
 
     if (node.backgroundColor) {
-      addBackground(`linear-gradient(to bottom, ${colorString(node.backgroundColor)} 0%, ${colorString(node.backgroundColor)} 100%)`);
+      const color = colorString(colorString(node.backgroundColor));
+      addBackground(`linear-gradient(to bottom, ${color} 0%, ${color} 100%)`);
     }
 
     if (images[node.id] != null && !Object.keys(props).includes('generateBG')) {
@@ -268,8 +269,9 @@ async function setFrameStyles(state, shared) {
     } else {
       for (let fill of fills) {
         if (fill.type === 'SOLID') {
+          const color = colorString(fill.color, fill.opacity);
           addBackground(
-            `linear-gradient(to bottom, ${colorString(fill.color, fill.opacity)} 0%, ${colorString(fill.color, fill.opacity)} 100%)`
+            `linear-gradient(to bottom, ${color} 0%, ${color} 100%)`
           );
         }
 
