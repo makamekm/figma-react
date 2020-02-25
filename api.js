@@ -4,11 +4,11 @@ const baseUrl = 'https://api.figma.com';
 
 module.exports = {
   loadCanvas,
-  loadURLImages,
-  loadImages,
+  loadVectorListImages,
+  loadVectors,
   loadNodes,
-  loadURLPNGImages,
-  loadPNGImages,
+  loadRefImages,
+  loadNodeImages,
   getHeaders
 };
 
@@ -32,47 +32,53 @@ async function loadNodes(ids, fileKey, headers) {
   return data.nodes;
 }
 
-async function loadURLImages(vectorList, fileKey, headers) {
-  const guids = vectorList.join(',');
-  data = await fetch(`${baseUrl}/v1/images/${fileKey}?ids=${guids}&format=svg`, { headers });
-  return await data.json();
-}
-
-async function loadPNGImages(imagesList, scale = 1, fileKey, imageFormat, headers) {
-  const guids = imagesList.join(',');
-  data = await fetch(`${baseUrl}/v1/images/${fileKey}?ids=${guids}&use_absolute_bounds=true&format=${imageFormat || 'svg'}&scale=${scale}`, { headers });
+async function loadNodeImages({ imageMap, fileKey, headers, options }) {
+  const { imageScale, imageFormat } = options;
+  const guids = Object.keys(imageMap).join(',');
+  data = await fetch(`${baseUrl}/v1/images/${fileKey}?ids=${guids}&use_absolute_bounds=true&format=${imageFormat}&scale=${imageScale}`, {
+    headers
+  });
   const json = await data.json();
   return json.images;
 }
 
-async function loadURLPNGImages(fileKey, headers) {
+async function loadRefImages({ fileKey, headers }) {
   data = await fetch(`${baseUrl}/v1/files/${fileKey}/images`, { headers });
   const json = await data.json();
   return json.meta.images;
 }
 
-async function loadImages(imageJSON) {
-  const images = imageJSON.images || {};
-  if (images) {
-    let promises = [];
-    let guids = [];
+async function loadVectorListImages({ vectorMap, fileKey, headers }) {
+  const guids = Object.keys(vectorMap).join(',');
+  data = await fetch(`${baseUrl}/v1/images/${fileKey}?ids=${guids}&format=svg`, { headers });
+  const json = await data.json();
+  return json.images || {};
+}
 
-    for (const guid in images) {
-      if (images[guid] == null) continue;
-      guids.push(guid);
-      promises.push(fetch(images[guid]));
-    }
+async function loadVectors(shared) {
+  const { headers } = shared;
 
-    let responses = await Promise.all(promises);
-    promises = [];
-    for (const resp of responses) {
-      promises.push(resp.text());
-    }
+  const vectors = await loadVectorListImages(shared);
 
-    responses = await Promise.all(promises);
-    for (let i = 0; i < responses.length; i++) {
-      images[guids[i]] = responses[i].replace('<svg ', '<svg preserveAspectRatio="none" ');
-    }
+  let promises = [];
+  let guids = [];
+
+  for (const guid in vectors) {
+    if (vectors[guid] == null) continue;
+    guids.push(guid);
+    promises.push(fetch(vectors[guid], { headers }));
   }
-  return images;
+
+  let responses = await Promise.all(promises);
+  promises = [];
+  for (const resp of responses) {
+    promises.push(resp.text());
+  }
+
+  responses = await Promise.all(promises);
+  for (let i = 0; i < responses.length; i++) {
+    vectors[guids[i]] = responses[i].replace('<svg ', '<svg preserveAspectRatio="none" ');
+  }
+
+  return vectors;
 }

@@ -509,7 +509,7 @@ function paintsRequireRender(paints) {
 }
 
 function preprocessTree(node, shared) {
-  const { vectorMap, vectorList, imageMap } = shared;
+  const { vectorMap, imageMap } = shared;
 
   // let vectorsOnly = node.name.charAt(0) !== '#';
   let vectorVConstraint = null;
@@ -548,7 +548,6 @@ function preprocessTree(node, shared) {
   if (VECTOR_TYPES.includes(node.type)) {
     node.type = 'VECTOR';
     vectorMap[node.id] = node;
-    vectorList.push(node.id);
     node.children = [];
   }
 
