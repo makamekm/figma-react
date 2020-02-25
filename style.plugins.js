@@ -298,37 +298,35 @@ async function setFrameStyles(state, shared) {
       }
     }
 
-    if (node.effects) {
-      for (let i = 0; i < node.effects.length; i++) {
-        const effect = node.effects[i];
+    const addValue = (name, value) => {
+      middleStyle[name] = `${middleStyle[name] ? `${middleStyle[name]}, ` : ''}${value}`;
+    };
 
+    if (node.effects) {
+      for (let effect of node.effects) {
         if (effect.visible === false) {
           continue;
         }
 
-        const prevFilter = `${middleStyle.filter ? ', ' : ''}`;
-        const prevBoxShadow = `${middleStyle.boxShadow ? ', ' : ''}`;
-        const prevBackdropFilter = `${middleStyle.backdropFilter ? ', ' : ''}`;
-
         if (effect.type === 'DROP_SHADOW') {
           if (Object.keys(props).includes('filterShadow')) {
-            middleStyle.filter = `${prevFilter}drop-shadow(${dropShadow(effect)})`;
+            addValue('filter', `drop-shadow(${dropShadow(effect)})`);
           } else {
-            middleStyle.boxShadow = `${prevBoxShadow}${dropShadow(effect)}`;
+            addValue('boxShadow', `${dropShadow(effect)}`);
           }
         }
         if (effect.type === 'INNER_SHADOW') {
           if (Object.keys(props).includes('filterShadow')) {
-            middleStyle.filter = `${prevFilter}drop-shadow(${innerShadow(effect)})`;
+            addValue('filter', `drop-shadow(${innerShadow(effect)})`);
           } else {
-            middleStyle.boxShadow = `${prevBoxShadow}${innerShadow(effect)}`;
+            addValue('boxShadow', `${innerShadow(effect)}`);
           }
         }
         if (effect.type === 'LAYER_BLUR') {
-          middleStyle.filter = `${prevFilter}blur(${effect.radius}px)`;
+          addValue('filter', `blur(${effect.radius}px)`);
         }
         if (effect.type === 'BACKGROUND_BLUR') {
-          middleStyle.backdropFilter = `${prevBackdropFilter}blur(${effect.radius}px)`;
+          addValue('backdropFilter', `blur(${effect.radius}px)`);
         }
       }
     }
@@ -390,6 +388,10 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
       middleStyle.alignContent = 'flex-end';
     }
 
+    const addValue = (name, value) => {
+      middleStyle[name] = `${middleStyle[name] ? `${middleStyle[name]}, ` : ''}${value}`;
+    };
+
     if (node.effects) {
       for (let i = 0; i < node.effects.length; i++) {
         const effect = node.effects[i];
@@ -398,21 +400,18 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
           continue;
         }
 
-        const prevFilter = `${middleStyle.filter ? ', ' : ''}`;
-        const prevBoxShadow = `${middleStyle.boxShadow ? ', ' : ''}`;
-
         if (effect.type === 'DROP_SHADOW') {
           if (Object.keys(props).includes('filterShadow')) {
-            middleStyle.filter = `${prevFilter}drop-shadow(${dropShadow(effect)})`;
+            addValue('filter', `drop-shadow(${dropShadow(effect)})`);
           } else {
-            middleStyle.textShadow = `${prevBoxShadow}${dropShadow(effect)}`;
+            addValue('textShadow', dropShadow(effect));
           }
         }
         if (effect.type === 'INNER_SHADOW') {
           if (Object.keys(props).includes('filterShadow')) {
-            middleStyle.filter = `${prevFilter}drop-shadow(${innerShadow(effect)})`;
+            addValue('filter', `drop-shadow(${innerShadow(effect)})`);
           } else {
-            middleStyle.textShadow = `${prevBoxShadow}${innerShadow(effect)}`;
+            addValue('textShadow', innerShadow(effect));
           }
         }
       }
