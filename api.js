@@ -38,9 +38,9 @@ async function loadURLImages(vectorList, fileKey, headers) {
   return await data.json();
 }
 
-async function loadPNGImages(imagesList, fileKey, headers) {
+async function loadPNGImages(imagesList, scale = 1, fileKey, imageFormat, headers) {
   const guids = imagesList.join(',');
-  data = await fetch(`${baseUrl}/v1/images/${fileKey}?ids=${guids}&use_absolute_bounds=true`, { headers });
+  data = await fetch(`${baseUrl}/v1/images/${fileKey}?ids=${guids}&use_absolute_bounds=true&format=${imageFormat || 'svg'}&scale=${scale}`, { headers });
   const json = await data.json();
   return json.images;
 }

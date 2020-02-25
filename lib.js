@@ -1,6 +1,7 @@
 const fs = require('fs');
 const fsPath = require('path');
 const prettier = require('prettier');
+const fetch = require('node-fetch');
 
 const VECTOR_TYPES = ['VECTOR', 'LINE', 'REGULAR_POLYGON', 'ELLIPSE', 'STAR'];
 const GROUP_TYPES = ['GROUP', 'BOOLEAN_OPERATION'];
@@ -57,7 +58,12 @@ module.exports = {
   createComponent,
   createComponents,
   generateComponent,
-  getDescriptionStyles
+  getDescriptionStyles,
+  makeDir,
+  saveFileFromFetch,
+  loadImageToDisk,
+  loadImageFromImagesToDisk,
+  loadImageFromRefImagesToDisk
 };
 
 function typeFactoryDefault({ props }) {
@@ -66,8 +72,10 @@ function typeFactoryDefault({ props }) {
     .join('')} }`;
 }
 
-function colorString(color) {
-  return `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${color.a})`;
+function colorString(color, opacity) {
+  return `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${
+    opacity == null ? color.a : opacity
+  })`;
 }
 
 function dropShadow(effect) {
@@ -503,17 +511,17 @@ function paintsRequireRender(paints) {
 function preprocessTree(node, shared) {
   const { vectorMap, vectorList, imageMap } = shared;
 
-  let vectorsOnly = node.name.charAt(0) !== '#';
+  // let vectorsOnly = node.name.charAt(0) !== '#';
   let vectorVConstraint = null;
   let vectorHConstraint = null;
 
-  if (
-    paintsRequireRender(node.fills) ||
-    paintsRequireRender(node.strokes) ||
-    (node.blendMode != null && ['PASS_THROUGH', 'NORMAL'].indexOf(node.blendMode) < 0)
-  ) {
-    node.type = 'VECTOR';
-  }
+  // if (
+  //   paintsRequireRender(node.fills) ||
+  //   paintsRequireRender(node.strokes) ||
+  //   (node.blendMode != null && ['PASS_THROUGH', 'NORMAL'].indexOf(node.blendMode) < 0)
+  // ) {
+  //   node.type = 'VECTOR';
+  // }
 
   const children = node.children && node.children.filter(child => child.visible !== false);
   if (children) {
@@ -529,13 +537,13 @@ function preprocessTree(node, shared) {
   }
   node.children = children;
 
-  if (children && children.length > 0 && vectorsOnly) {
-    node.type = 'VECTOR';
-    node.constraints = {
-      vertical: vectorVConstraint,
-      horizontal: vectorHConstraint
-    };
-  }
+  // if (children && children.length > 0 && vectorsOnly) {
+  //   node.type = 'VECTOR';
+  //   node.constraints = {
+  //     vertical: vectorVConstraint,
+  //     horizontal: vectorHConstraint
+  //   };
+  // }
 
   if (VECTOR_TYPES.includes(node.type)) {
     node.type = 'VECTOR';
@@ -568,14 +576,16 @@ function preprocessCanvasComponents(canvas, shared) {
   }
 }
 
-function makeDir(options) {
-  if (options.makeDir) {
-    fs.mkdirSync(fsPath.resolve(options.dir), { recursive: true });
+function makeDir(dir) {
+  if (dir) {
+    fs.mkdirSync(fsPath.resolve(dir), { recursive: true });
   }
 }
 
 function writeFile(path, contents, options = {}) {
-  makeDir(options);
+  if (options.makeDir) {
+    makeDir(options.dir);
+  }
   new Promise((r, e) =>
     prettier.resolveConfig('./.prettierrc').then(prettierOptions => {
       try {
@@ -758,4 +768,51 @@ async function generateComponent(component, options) {
 
   // Write the final result
   await writeFile(path, contents, options);
+}
+
+async function saveFileFromFetch(res, path) {
+  await new Promise((resolve, reject) => {
+    const fileStream = fs.createWriteStream(path);
+    res.body.pipe(fileStream);
+    res.body.on('error', err => {
+      reject(err);
+    });
+    fileStream.on('finish', function() {
+      resolve();
+    });
+  });
+}
+
+async function loadImageToDisk(url, fileName, { options, headers }) {
+  const imageRequest = await fetch(url, { headers });
+
+  if (imageRequest.headers.get('content-type') === 'image/svg+xml') {
+    fileName += '.svg';
+  }
+  if (imageRequest.headers.get('content-type') === 'image/png') {
+    fileName += '.png';
+  }
+  if (imageRequest.headers.get('content-type') === 'image/jpeg') {
+    fileName += '.jpg';
+  }
+
+  if (options.makeDir) {
+    await makeDir(options.imageDir);
+  }
+
+  await saveFileFromFetch(imageRequest, fsPath.resolve(options.imageDir, fileName));
+
+  return `${options.imageUrlPrefix}${fileName}`;
+}
+
+async function loadImageFromImagesToDisk(node, shared) {
+  const { images } = shared;
+  const fileName = node.id.replace(/\W+/g, '-');
+  return loadImageToDisk(images[node.id], fileName, shared);
+}
+
+async function loadImageFromRefImagesToDisk(imageRef, shared) {
+  const { refImages } = shared;
+  const fileName = imageRef.replace(/\W+/g, '-');
+  return loadImageToDisk(refImages[imageRef], fileName, shared);
 }

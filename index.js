@@ -65,9 +65,9 @@ async function runFigmaReact(options = {}) {
 
   // Load all images used in the document from Figma
   const imageJSON = await loadURLImages(vectorList, fileKey, headers);
-  const imgMap = await loadImages(imageJSON, fileKey, headers);
-  const pngImages = await loadURLPNGImages(fileKey, headers);
-  const images = await loadPNGImages(Object.keys(imageMap), fileKey, headers);
+  const vectors = await loadImages(imageJSON, fileKey, headers);
+  const refImages = await loadURLPNGImages(fileKey, headers);
+  const images = await loadPNGImages(Object.keys(imageMap), options.imageScale, fileKey, options.imageFormat, headers);
 
   // Debug
   // const fs = require('fs');
@@ -77,8 +77,8 @@ async function runFigmaReact(options = {}) {
   await createComponents(canvas, {
     fileKey,
     headers,
-    imgMap,
-    pngImages,
+    vectors,
+    refImages,
     images,
     componentMap,
     componentDescriptionMap,
