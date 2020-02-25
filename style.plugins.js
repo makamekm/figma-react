@@ -236,7 +236,7 @@ async function setFrameStyles(state, shared) {
     }
 
     if (node.backgroundColor) {
-      const color = colorString(colorString(node.backgroundColor));
+      const color = colorString(node.backgroundColor);
       addBackground(`linear-gradient(to bottom, ${color} 0%, ${color} 100%)`);
     }
 
@@ -270,9 +270,7 @@ async function setFrameStyles(state, shared) {
       for (let fill of fills) {
         if (fill.type === 'SOLID') {
           const color = colorString(fill.color, fill.opacity);
-          addBackground(
-            `linear-gradient(to bottom, ${color} 0%, ${color} 100%)`
-          );
+          addBackground(`linear-gradient(to bottom, ${color} 0%, ${color} 100%)`);
         }
 
         if (fill.type === 'IMAGE' && refImages[fill.imageRef] != null) {
