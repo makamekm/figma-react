@@ -39,13 +39,13 @@ async function loadNodeImages({ imageMap, fileKey, headers, options }) {
     headers
   });
   const json = await data.json();
-  return json.images;
+  return json.images || {};
 }
 
 async function loadRefImages({ fileKey, headers }) {
   data = await fetch(`${baseUrl}/v1/files/${fileKey}/images`, { headers });
   const json = await data.json();
-  return json.meta.images;
+  return json.meta.images || {};
 }
 
 async function loadVectorListImages({ vectorMap, fileKey, headers }) {
