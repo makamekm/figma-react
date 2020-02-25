@@ -515,13 +515,13 @@ function preprocessTree(node, shared) {
   let vectorVConstraint = null;
   let vectorHConstraint = null;
 
-  if (
-    paintsRequireRender(node.fills) ||
-    paintsRequireRender(node.strokes) ||
-    (node.blendMode != null && ['PASS_THROUGH', 'NORMAL'].indexOf(node.blendMode) < 0)
-  ) {
-    node.type = 'VECTOR';
-  }
+  // if (
+  //   paintsRequireRender(node.fills) ||
+  //   paintsRequireRender(node.strokes) ||
+  //   (node.blendMode != null && ['PASS_THROUGH', 'NORMAL'].indexOf(node.blendMode) < 0)
+  // ) {
+  //   node.type = 'VECTOR';
+  // }
 
   const children = node.children && node.children.filter(child => child.visible !== false);
   if (children) {
@@ -539,10 +539,10 @@ function preprocessTree(node, shared) {
 
   if (children && children.length > 0 && vectorsOnly) {
     node.type = 'VECTOR';
-    node.constraints = {
-      vertical: vectorVConstraint,
-      horizontal: vectorHConstraint
-    };
+    // node.constraints = {
+    //   vertical: vectorVConstraint,
+    //   horizontal: vectorHConstraint
+    // };
   }
 
   if (VECTOR_TYPES.includes(node.type)) {
