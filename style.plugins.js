@@ -474,8 +474,16 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
 
           const id = printStyle(styleCache[currStyle]);
 
-          if (id) content.push(`<span className="${id}" key="${key}">${para}</span>`);
-          else content.push(`<span key="${key}">${para}</span>`);
+          para = para.replace(/\"/g, '\\"');
+          const spaceBefore = Array(para.length - para.trimLeft().length)
+            .fill('&nbsp;')
+            .join('');
+          const spaceAfter = Array(para.length - para.trimRight().length)
+            .fill('&nbsp;')
+            .join('');
+          para = para.trim();
+          if (id) content.push(`<span className="${id}" key="${key}">${spaceBefore}{\`${para}\`}${spaceAfter}</span>`);
+          else content.push(`<span key="${key}">${spaceBefore}{\`${para}\`}${spaceAfter}</span>`);
 
           para = '';
           currStyleIndex++;
@@ -505,7 +513,8 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
           currStyle = idx;
         }
 
-        para += node.characters[i];
+        const char = node.characters[i];
+        para += char;
       }
       commitParagraph('end');
     }
