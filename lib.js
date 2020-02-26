@@ -518,7 +518,7 @@ function preprocessTree(node, shared) {
   // if (
   //   paintsRequireRender(node.fills) ||
   //   paintsRequireRender(node.strokes) ||
-  //   (node.blendMode != null && ['PASS_THROUGH', 'NORMAL'].indexOf(node.blendMode) < 0)
+  //   (node.blendMode != null && !['PASS_THROUGH', 'NORMAL'].includes(node.blendMode)))
   // ) {
   //   node.type = 'VECTOR';
   // }
