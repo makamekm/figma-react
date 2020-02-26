@@ -426,10 +426,7 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
         `<input
         key="${node.id}"
         className="${inputId}"
-        type="${props.input
-          || 'text'}" placeholder="${
-          node.characters
-        }" name="${node.name.substring(7)}" />`
+        type="${props.input || 'text'}" placeholder="${node.characters}" name="${node.name.substring(7)}" />`
       );
     } else {
       let para = '';
