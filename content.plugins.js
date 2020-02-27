@@ -60,7 +60,7 @@ function renderVector(state, { vectors, genClassName, additionalStyles }) {
     const scaleHorizontal = cHorizontal === 'LEFT_RIGHT' || cHorizontal === 'SCALE';
     const scaleVertical = cVertical === 'TOP_BOTTOM' || cVertical === 'SCALE';
 
-    let additionalSvgStyles = `\n.${currentClass} > :global(svg) {\n`;
+    let additionalSvgStyles = '';
     if (scaleHorizontal) additionalSvgStyles += `left: 0;\nwidth: 100%;\n`;
     if (scaleVertical) additionalSvgStyles += `top: 0;\nheight: 100%;\n`;
     if (scaleHorizontal && scaleVertical) {
@@ -70,8 +70,11 @@ function renderVector(state, { vectors, genClassName, additionalStyles }) {
     } else if (!scaleHorizontal && scaleVertical) {
       additionalSvgStyles += `transform: translateX(-50%);\n`;
     }
-    additionalSvgStyles += `}\n`;
-    additionalStyles.push(additionalSvgStyles);
+    if (additionalSvgStyles.length > 0) {
+      additionalSvgStyles =+ `\n.${currentClass} > :global(svg) {\n`;
+      additionalSvgStyles += `}\n`;
+      additionalStyles.push(additionalSvgStyles);
+    }
 
     content.push(`<div className='vector ${currentClass}' dangerouslySetInnerHTML={{__html: \`${vectors[node.id]}\`}} />`);
   }
