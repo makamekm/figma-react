@@ -22,37 +22,63 @@ async function loadCanvas(fileKey, headers) {
   let resp = await fetch(`${baseUrl}/v1/files/${fileKey}?geometry=paths`, { headers });
   let data = await resp.json();
   const document = data.document;
+  if (data.err) {
+    throw new Error(data.err);
+  }
   const canvas = document.children[0];
   return canvas;
 }
 
 async function loadNodes(ids, fileKey, headers) {
-  let resp = await fetch(`${baseUrl}/v1/files/${fileKey}/nodes?geometry=paths&ids=${ids.join(',')}`, { headers });
-  let data = await resp.json();
-  return data.nodes;
+  if (ids.length > 0) {
+    let resp = await fetch(`${baseUrl}/v1/files/${fileKey}/nodes?geometry=paths&ids=${ids.join(',')}`, { headers });
+    let data = await resp.json();
+    if (data.err) {
+      throw new Error(data.err);
+    }
+    return data.nodes;
+  } else {
+    return {};
+  }
 }
 
 async function loadNodeImages({ imageMap, fileKey, headers, options }) {
   const { imageScale, imageFormat } = options;
-  const guids = Object.keys(imageMap).join(',');
-  data = await fetch(`${baseUrl}/v1/images/${fileKey}?ids=${guids}&use_absolute_bounds=true&format=${imageFormat}&scale=${imageScale}`, {
-    headers
-  });
-  const json = await data.json();
-  return json.images || {};
+  if (Object.keys(imageMap).length > 0) {
+    const guids = Object.keys(imageMap).join(',');
+    const resp = await fetch(
+      `${baseUrl}/v1/images/${fileKey}?ids=${guids}&use_absolute_bounds=true&format=${imageFormat}&scale=${imageScale}`,
+      {
+        headers
+      }
+    );
+    const data = await resp.json();
+    if (data.err) {
+      throw new Error(data.err);
+    }
+    return data.images || {};
+  } else {
+    return {};
+  }
 }
 
 async function loadRefImages({ fileKey, headers }) {
-  data = await fetch(`${baseUrl}/v1/files/${fileKey}/images`, { headers });
-  const json = await data.json();
-  return json.meta.images || {};
+  const resp = await fetch(`${baseUrl}/v1/files/${fileKey}/images`, { headers });
+  const data = await resp.json();
+  if (data.err) {
+    throw new Error(data.err);
+  }
+  return data.meta.images || {};
 }
 
 async function loadVectorListImages({ vectorMap, fileKey, headers }) {
   const guids = Object.keys(vectorMap).join(',');
-  data = await fetch(`${baseUrl}/v1/images/${fileKey}?ids=${guids}&format=svg`, { headers });
-  const json = await data.json();
-  return json.images || {};
+  const resp = await fetch(`${baseUrl}/v1/images/${fileKey}?ids=${guids}&format=svg`, { headers });
+  const data = await resp.json();
+  if (data.err) {
+    throw new Error(data.err);
+  }
+  return data.images || {};
 }
 
 async function loadVectors(shared) {
