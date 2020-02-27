@@ -71,7 +71,7 @@ function renderVector(state, { vectors, genClassName, additionalStyles }) {
       additionalSvgStyles += `transform: translateX(-50%);\n`;
     }
     if (additionalSvgStyles.length > 0) {
-      additionalSvgStyles =+ `\n.${currentClass} > :global(svg) {\n`;
+      additionalSvgStyles = `\n.${currentClass} > :global(svg) {\n` + additionalSvgStyles;
       additionalSvgStyles += `}\n`;
       additionalStyles.push(additionalSvgStyles);
     }
