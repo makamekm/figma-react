@@ -72,9 +72,9 @@ async function loadRefImages({ fileKey, headers }) {
   return data.meta.images || {};
 }
 
-async function loadVectorListImages({ vectorMap, fileKey, headers }) {
+async function loadVectorListImages({ vectorMap, fileKey, headers }, absolute = false) {
   const guids = Object.keys(vectorMap).join(',');
-  const resp = await fetch(`${baseUrl}/v1/images/${fileKey}?ids=${guids}&format=svg&use_absolute_bounds=true`, { headers });
+  const resp = await fetch(`${baseUrl}/v1/images/${fileKey}?ids=${guids}&format=svg${absolute ? '&use_absolute_bounds=true' : ''}`, { headers });
   const data = await resp.json();
   if (data.err) {
     throw new Error(data.err);
@@ -85,12 +85,14 @@ async function loadVectorListImages({ vectorMap, fileKey, headers }) {
 async function loadVectors(shared) {
   const { headers, vectorMap } = shared;
 
-  const vectors = await loadVectorListImages(shared);
+  const vectors = await loadVectorListImages(shared, true);
+  const vectorsRelative = await loadVectorListImages(shared, false);
 
   let promises = [];
   const guids = [];
 
   for (const guid in vectors) {
+    if (vectors[guid] == null) vectors[guid] = vectorsRelative[guid];
     if (vectors[guid] == null) continue;
     guids.push(guid);
     promises.push(fetch(vectors[guid], { headers }));
@@ -107,27 +109,27 @@ async function loadVectors(shared) {
     vectors[guids[i]] = responses[i].replace('<svg ', '<svg preserveAspectRatio="none" ');
   }
 
-  for (const guid in vectorMap) {
-    if (!vectors[guid]) {
-      const node = vectorMap[guid];
-      let svg = '<svg preserveAspectRatio="none">';
-      let color = '#ffffff';
-      if (node.fills && node.fills.length > 0) {
-        for (const fill of node.fills) {
-          if (fill.type === 'SOLID') {
-            color = colorString(fill.color);
-          }
-        }
-      }
-      if (node.fillGeometry && node.fillGeometry.length > 0) {
-        for (const fill of node.fillGeometry) {
-          svg += `<path d="${fill.path}" fill="${color}"></path>`;
-        }
-      }
-      svg += '</svg>';
-      vectors[guid] = svg;
-    }
-  }
+  // for (const guid in vectorMap) {
+  //   if (!vectors[guid]) {
+  //     const node = vectorMap[guid];
+  //     let svg = '<svg preserveAspectRatio="none">';
+  //     let color = '#ffffff';
+  //     if (node.fills && node.fills.length > 0) {
+  //       for (const fill of node.fills) {
+  //         if (fill.type === 'SOLID') {
+  //           color = colorString(fill.color);
+  //         }
+  //       }
+  //     }
+  //     if (node.fillGeometry && node.fillGeometry.length > 0) {
+  //       for (const fill of node.fillGeometry) {
+  //         svg += `<path d="${fill.path}" fill="${color}"></path>`;
+  //       }
+  //     }
+  //     svg += '</svg>';
+  //     vectors[guid] = svg;
+  //   }
+  // }
 
   return vectors;
 }
