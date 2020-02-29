@@ -3,7 +3,7 @@ name: Node.js Public Release Notes
 on:
   release:
       types:
-        - created
+        - published
 
 jobs:
   test_develop:
