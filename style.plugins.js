@@ -418,11 +418,9 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
     const fontStyle = node.style;
     applyFontStyle(middleStyle, fontStyle);
 
-    const makeItFlex = () => {
-      middleStyle.display = 'flex';
-      middleStyle.maxWidth = '-webkit-fill-available';
-      middleStyle.alignContent = 'flex-start';
-    };
+    middleStyle.display = 'flex';
+    middleStyle.maxWidth = '-webkit-fill-available';
+    middleStyle.alignContent = 'flex-start';
 
     if (fontStyle.textAlignHorizontal === 'CENTER') {
       middleStyle.justifyContent = 'center';
@@ -479,7 +477,6 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
     }
 
     if (Object.keys(props).includes('input')) {
-      makeItFlex();
       const inputId = printStyle({
         flex: 1,
         height: '100%'
@@ -495,8 +492,6 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
       const styleCache = {};
       let currStyle = 0;
       let currStyleIndex = 0;
-      let nextLineCounter = 0;
-      let nextLineIndicator = false;
 
       const maxCurrStyle = Object.keys(node.styleOverrideTable)
         .map(s => Number.parseInt(s, 10))
@@ -529,7 +524,6 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
         ) {
           styleCache[currStyle].overflow = 'hidden';
           styleCache[currStyle].textOverflow = 'ellipsis';
-          makeItFlex();
         }
 
         if (Object.keys(props).includes('ellipsisFlex') && maxCurrStyle === currStyle) {
@@ -551,30 +545,33 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
           .join('');
         para = para.trim();
 
-        const br = Array(nextLineCounter)
-          .fill('<br/>')
-          .join('');
-
-        if (id) content.push(`<span className="${id}" key="${key}">${spaceBefore}{\`${para}\`}${spaceAfter}${br}</span>`);
-        else content.push(`<span key="${key}">${spaceBefore}{\`${para}\`}${spaceAfter}${br}</span>`);
+        if (id) content.push(`<span className="${id}" key="${key}">${spaceBefore}{\`${para}\`}${spaceAfter}</span>`);
+        else content.push(`<span key="${key}">${spaceBefore}{\`${para}\`}${spaceAfter}</span>`);
 
         para = '';
         currStyleIndex++;
-
-        nextLineCounter = 0;
-        nextLineIndicator = false;
       };
 
       for (const i in node.characters) {
         let idx = node.characterStyleOverrides && node.characterStyleOverrides[i];
         const char = node.characters[i];
 
-        if (nextLineIndicator && node.characters[i] !== '\n') {
-          commitParagraph(i);
-          para += char;
+        if (node.characters[i] === '\n' && node.characters[i - 1] === '\n') {
+          const id = printStyle({
+            flex: 1,
+            minWidth: '-webkit-fill-available'
+          });
+          content.push(`<div className="${id}" key="${`br${i}`}">&nbsp;</div>`);
         } else if (node.characters[i] === '\n') {
-          nextLineIndicator = true;
-          nextLineCounter++;
+          commitParagraph(i);
+
+          const id = printStyle({
+            flex: 1,
+            content: '""',
+            minWidth: '-webkit-fill-available'
+          });
+          content.push(`<br className="${id}" key="${`br${i}`}" />`);
+          middleStyle.flexWrap = 'wrap';
         } else {
           if (idx == null) {
             idx = 0;
