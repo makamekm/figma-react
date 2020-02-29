@@ -81,7 +81,7 @@ async function renderVector(state, shared) {
     }
 
     if (additionalSvgStyles.length > 0) {
-      additionalSvgStyles = `\n.${currentClass} > :global(svg) {\n` + additionalSvgStyles;
+      additionalSvgStyles = `\n.${currentClass} {\n` + additionalSvgStyles;
       additionalSvgStyles += `}\n`;
       additionalStyles.push(additionalSvgStyles);
     }
