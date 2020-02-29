@@ -248,7 +248,7 @@ function setHorizontalLayout({ node, middleStyle, innerStyle, parent, classNames
 
 async function setFrameStyles(state, shared) {
   const { refImages, images, genClassName, additionalStyles } = shared;
-  const { node, middleStyle, props, bounds, classNames } = state;
+  const { node, parent, middleStyle, props, bounds, classNames } = state;
 
   const addBackground = (value, size) => {
     middleStyle.background = `${middleStyle.background ? `${middleStyle.background}, ` : ''}${value}`;
@@ -276,22 +276,23 @@ async function setFrameStyles(state, shared) {
       const url = `url(${await loadImageFromImagesToDisk(node, shared)})`;
 
       if (bounds && Math.abs(bounds.angle) > 0) {
+        const left = (parent.absoluteBoundingBox.width - bounds.width) / 2 / bounds.width;
+        const top = (parent.absoluteBoundingBox.height - bounds.height) / 2 / bounds.height;
+
         const afterId = genClassName();
         classNames.push(afterId);
         additionalStyles.push(`
           .${afterId}::after {
             position: absolute;
             pointer-events: none;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            right: 0;
-            height: 100%;
-            width: 100%;
+            left: -${left * 100}%;
+            right: -${left * 100}%;
+            top: -${top * 100}%;
+            bottom: -${top * 100}%;
             content: '';
             background: ${url} center center no-repeat;
-            background-size: cover;
-            ${bounds && Math.abs(bounds.angle) > 0 ? `transform: rotate(${bounds.angle}deg);` : ''}
+            background-size: contain;
+            transform: rotate(${bounds.angle}deg);
             transform-origin: 50% 50%;
           }
         `);

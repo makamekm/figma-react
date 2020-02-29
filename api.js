@@ -85,7 +85,7 @@ async function loadVectorListImages({ vectorMap, fileKey, headers }, absolute = 
 }
 
 async function loadVectors(shared) {
-  const { headers, vectorMap } = shared;
+  const { headers } = shared;
 
   const vectors = await loadVectorListImages(shared, true);
   const vectorsRelative = await loadVectorListImages(shared, false);
