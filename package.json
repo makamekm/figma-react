@@ -1,7 +1,7 @@
 {
   "name": "figma-react",
   "description": "This is a tool to help you export Figma project into React mockups",
-  "version": "1.0.12",
+  "version": "1.0.15",
   "private": false,
   "author": "Maxim Karpov <makame@mail.ru>",
   "repository": {
@@ -46,7 +46,8 @@
     "dotenv": "^8.2.0",
     "node-fetch": "^2.6.0",
     "prettier": "^1.19.1",
-    "request-image-size": "^2.1.0"
+    "request-image-size": "^2.1.0",
+    "svg-to-jsx": "^1.0.2"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.3",
