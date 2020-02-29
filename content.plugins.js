@@ -1,8 +1,9 @@
-const { emptyChildren, getComponentName, createComponent, getDescriptionStyles } = require('./lib');
+const { emptyChildren, getComponentName, createComponent, getDescriptionStyles, saveSvgToDisk } = require('./lib');
 
 const contentPlugins = [
   applyStyles,
   setComponentFromCache,
+  renderMask,
   renderVector,
   renderPropsChildren,
   renderPropsChildrenIfEmpty,
@@ -47,9 +48,17 @@ async function setComponentFromCache(state, shared) {
   }
 }
 
-function renderVector(state, { vectors, genClassName, additionalStyles }) {
+function renderMask(state) {
+  const { node } = state;
+  if (node.isMask) {
+    emptyChildren(state);
+  }
+}
+
+async function renderVector(state, shared) {
+  const { vectors, genClassName, additionalStyles } = shared;
   const { node, content } = state;
-  if (node.type === 'VECTOR' && vectors[node.id]) {
+  if (node.type === 'VECTOR' && vectors[node.id] && !node.isMask) {
     emptyChildren(state);
 
     const currentClass = genClassName();
@@ -60,7 +69,7 @@ function renderVector(state, { vectors, genClassName, additionalStyles }) {
     const scaleHorizontal = cHorizontal === 'LEFT_RIGHT' || cHorizontal === 'SCALE';
     const scaleVertical = cVertical === 'TOP_BOTTOM' || cVertical === 'SCALE';
 
-    let additionalSvgStyles = `\n.${currentClass} > :global(svg) {\n`;
+    let additionalSvgStyles = '';
     if (scaleHorizontal) additionalSvgStyles += `left: 0;\nwidth: 100%;\n`;
     if (scaleVertical) additionalSvgStyles += `top: 0;\nheight: 100%;\n`;
     if (scaleHorizontal && scaleVertical) {
@@ -70,10 +79,17 @@ function renderVector(state, { vectors, genClassName, additionalStyles }) {
     } else if (!scaleHorizontal && scaleVertical) {
       additionalSvgStyles += `transform: translateX(-50%);\n`;
     }
-    additionalSvgStyles += `}\n`;
-    additionalStyles.push(additionalSvgStyles);
 
-    content.push(`<div className='vector ${currentClass}' dangerouslySetInnerHTML={{__html: \`${vectors[node.id]}\`}} />`);
+    if (additionalSvgStyles.length > 0) {
+      additionalSvgStyles = `\n.${currentClass} {\n` + additionalSvgStyles;
+      additionalSvgStyles += `}\n`;
+      additionalStyles.push(additionalSvgStyles);
+    }
+
+    const fileName = node.id.replace(/\W+/g, '-');
+    const url = await saveSvgToDisk(fileName, vectors[node.id], shared);
+
+    content.push(`<img className='vector ${currentClass}' src='${url}' />`);
   }
 }
 

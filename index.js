@@ -51,6 +51,10 @@ async function runFigmaReact(options = {}) {
   // Load the document from Figma
   const canvas = await loadCanvas(fileKey, headers);
 
+  // Debug
+  // const fs = require('fs');
+  // fs.writeFileSync('./temp.json', JSON.stringify(canvas, null, 4));
+
   // Wrap vectors and images
   preprocessCanvasComponents(canvas, shared);
 
@@ -65,10 +69,6 @@ async function runFigmaReact(options = {}) {
   shared.vectors = await loadVectors(shared);
   shared.refImages = await loadRefImages(shared);
   shared.images = await loadNodeImages(shared);
-
-  // Debug
-  // const fs = require('fs');
-  // fs.writeFileSync('./temp.json', JSON.stringify(canvas, null, 4));
 
   // Create components
   await createComponents(canvas, shared);
