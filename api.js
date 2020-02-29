@@ -74,7 +74,9 @@ async function loadRefImages({ fileKey, headers }) {
 
 async function loadVectorListImages({ vectorMap, fileKey, headers }, absolute = false) {
   const guids = Object.keys(vectorMap).join(',');
-  const resp = await fetch(`${baseUrl}/v1/images/${fileKey}?ids=${guids}&format=svg${absolute ? '&use_absolute_bounds=true' : ''}`, { headers });
+  const resp = await fetch(`${baseUrl}/v1/images/${fileKey}?ids=${guids}&format=svg${absolute ? '&use_absolute_bounds=true' : ''}`, {
+    headers
+  });
   const data = await resp.json();
   if (data.err) {
     throw new Error(data.err);
