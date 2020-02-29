@@ -520,6 +520,8 @@ function paintsRequireRender(paints) {
 function preprocessTree(node, shared) {
   const { vectorMap, imageMap, options } = shared;
 
+  const props = getElementParams(node.name, options);
+
   let vectorsOnly = node.name.charAt(0) !== '#';
   // let vectorVConstraint = null;
   // let vectorHConstraint = null;
@@ -550,8 +552,6 @@ function preprocessTree(node, shared) {
     }
   }
   node.children = children;
-
-  const props = getElementParams(node.name, options);
 
   if ((children && children.length > 0 && vectorsOnly) || Object.keys(props).includes('vector')) {
     node.type = 'VECTOR';
