@@ -1,5 +1,5 @@
 const fetch = require('node-fetch');
-const { colorString } = require('./lib');
+const { colorString, getElementParams } = require('./lib');
 
 const baseUrl = 'https://api.figma.com';
 
@@ -9,6 +9,7 @@ module.exports = {
   loadVectors,
   loadNodes,
   loadRefImages,
+  loadListImages,
   loadNodeImages,
   getHeaders
 };
@@ -72,23 +73,38 @@ async function loadRefImages({ fileKey, headers }) {
   return data.meta.images || {};
 }
 
-async function loadVectorListImages({ vectorMap, fileKey, headers }, absolute = false) {
-  const guids = Object.keys(vectorMap).join(',');
-  const resp = await fetch(`${baseUrl}/v1/images/${fileKey}?ids=${guids}&format=svg${absolute ? '&use_absolute_bounds=true' : ''}`, {
-    headers
-  });
-  const data = await resp.json();
-  if (data.err) {
-    throw new Error(data.err);
+async function loadListImages({ fileKey, headers, options }, guids, format = 'svg', absolute = false, scale = null) {
+  if (guids.length > 0) {
+    const { imageScale } = options;
+    scale = scale || imageScale;
+    const resp = await fetch(
+      `${baseUrl}/v1/images/${fileKey}?ids=${guids}&scale=${format === 'svg' ? 1 : imageScale}&format=${format}${
+        absolute ? '&use_absolute_bounds=true' : ''
+      }`,
+      {
+        headers
+      }
+    );
+    const data = await resp.json();
+    if (data.err) {
+      throw new Error(data.err);
+    }
+    return data.images || {};
+  } else {
+    return {};
   }
-  return data.images || {};
+}
+
+async function loadVectorListImages(shared, format = 'svg', absolute = false) {
+  const { vectorMap } = shared;
+  return loadListImages(shared, Object.keys(vectorMap).join(','), format, absolute);
 }
 
 async function loadVectors(shared) {
   const { headers } = shared;
 
-  const vectors = await loadVectorListImages(shared, true);
-  const vectorsRelative = await loadVectorListImages(shared, false);
+  const vectors = await loadVectorListImages(shared, 'svg', true);
+  const vectorsRelative = await loadVectorListImages(shared, 'svg', false);
 
   let promises = [];
   const guids = [];

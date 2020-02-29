@@ -7,9 +7,11 @@ const {
   paintToLinearGradient,
   paintToRadialGradient,
   applyFontStyle,
+  loadImageToDisk,
   loadImageFromImagesToDisk,
   loadImageFromRefImagesToDisk
 } = require('./lib');
+const { loadListImages } = require('./api');
 
 const stylePlugins = [
   setMiddleOrder,
@@ -18,6 +20,7 @@ const stylePlugins = [
   setVerticalAlign,
   setHorizontalLayout,
   setFrameStyles,
+  renderMask,
   setTextRenderer
 ];
 
@@ -29,6 +32,7 @@ module.exports = {
   setVerticalAlign,
   setHorizontalLayout,
   setFrameStyles,
+  renderMask,
   setTextRenderer
 };
 
@@ -376,6 +380,25 @@ async function setFrameStyles(state, shared) {
     if (cornerRadii && cornerRadii.length === 4 && cornerRadii[0] + cornerRadii[1] + cornerRadii[2] + cornerRadii[3] > 0) {
       middleStyle.borderRadius = `${cornerRadii[0]}px ${cornerRadii[1]}px ${cornerRadii[2]}px ${cornerRadii[3]}px`;
     }
+  }
+}
+
+async function renderMask(state, shared) {
+  const { node, prev, middleStyle } = state;
+  const maskNode = (prev && prev.isMask && prev) || (prev && prev.nodeMask);
+  if (maskNode) {
+    node.nodeMask = maskNode;
+    const fileName = node.id.replace(/\W+/g, '-') + '_mask';
+    const base = await loadListImages(shared, maskNode.id, 'png', true);
+    const url = `url(${await loadImageToDisk(base[maskNode.id], fileName, shared)})`;
+    middleStyle.maskImage = url;
+    const left = maskNode.absoluteBoundingBox.x - node.absoluteBoundingBox.x;
+    const top = maskNode.absoluteBoundingBox.y - node.absoluteBoundingBox.y;
+    const width = maskNode.absoluteBoundingBox.width;
+    const height = maskNode.absoluteBoundingBox.height;
+    middleStyle.maskPosition = `${left}px ${top}px`;
+    middleStyle.maskMode = 'luminance';
+    middleStyle.maskSize = `${width}px ${height}px`;
   }
 }
 

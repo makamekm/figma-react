@@ -3,6 +3,7 @@ const { emptyChildren, getComponentName, createComponent, getDescriptionStyles }
 const contentPlugins = [
   applyStyles,
   setComponentFromCache,
+  renderMask,
   renderVector,
   renderPropsChildren,
   renderPropsChildrenIfEmpty,
@@ -47,9 +48,16 @@ async function setComponentFromCache(state, shared) {
   }
 }
 
+function renderMask(state) {
+  const { node } = state;
+  if (node.isMask) {
+    emptyChildren(state);
+  }
+}
+
 function renderVector(state, { vectors, genClassName, additionalStyles }) {
   const { node, content } = state;
-  if (node.type === 'VECTOR' && vectors[node.id]) {
+  if (node.type === 'VECTOR' && vectors[node.id] && !node.isMask) {
     emptyChildren(state);
 
     const currentClass = genClassName();

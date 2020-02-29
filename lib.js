@@ -361,23 +361,27 @@ function emptyChildren({ content, minChildren, centerChildren, maxChildren }) {
 async function renderChildren({ node, minChildren, centerChildren, maxChildren }, shared) {
   let first = true;
 
+  let prev = null;
   for (const child of minChildren) {
-    await visitNode(shared, child, node, !first);
+    await visitNode(shared, child, prev, node, !first);
     first = false;
+    prev = child;
   }
 
   for (const child of centerChildren) {
-    await visitNode(shared, child, node);
+    await visitNode(shared, child, prev, node);
+    prev = child;
   }
 
   first = true;
   for (const child of maxChildren) {
-    await visitNode(shared, child, node, !first);
+    await visitNode(shared, child, prev, node, !first);
     first = false;
+    prev = child;
   }
 }
 
-async function visitNode(shared, node, parent = null, notFirst = false) {
+async function visitNode(shared, node, prev = null, parent = null, notFirst = false) {
   const { print, preprint, options } = shared;
 
   const nodeProps = {};
@@ -406,6 +410,7 @@ async function visitNode(shared, node, parent = null, notFirst = false) {
   const state = {
     classNames,
     node,
+    prev,
     props,
     increaseDivCounter,
     decreaseDivCounter,
@@ -420,6 +425,8 @@ async function visitNode(shared, node, parent = null, notFirst = false) {
     content,
     nodeProps
   };
+
+  node.state = state;
 
   expandChildren(node, parent, minChildren, maxChildren, centerChildren, 0);
 
