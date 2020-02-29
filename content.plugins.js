@@ -1,4 +1,4 @@
-const { emptyChildren, getComponentName, createComponent, getDescriptionStyles } = require('./lib');
+const { emptyChildren, getComponentName, createComponent, getDescriptionStyles, saveSvgToDisk } = require('./lib');
 
 const contentPlugins = [
   applyStyles,
@@ -55,7 +55,8 @@ function renderMask(state) {
   }
 }
 
-function renderVector(state, { vectors, genClassName, additionalStyles }) {
+async function renderVector(state, shared) {
+  const { vectors, genClassName, additionalStyles } = shared;
   const { node, content } = state;
   if (node.type === 'VECTOR' && vectors[node.id] && !node.isMask) {
     emptyChildren(state);
@@ -85,7 +86,10 @@ function renderVector(state, { vectors, genClassName, additionalStyles }) {
       additionalStyles.push(additionalSvgStyles);
     }
 
-    content.push(`<div className='vector ${currentClass}' dangerouslySetInnerHTML={{__html: \`${vectors[node.id]}\`}} />`);
+    const fileName = node.id.replace(/\W+/g, '-');
+    const url = await saveSvgToDisk(fileName, vectors[node.id], shared);
+
+    content.push(`<img className='vector ${currentClass}' src='${url}' />`);
   }
 }
 

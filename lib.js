@@ -17,7 +17,7 @@ input {
 input:focus {
   outline: none;
 }
-.vector :global(svg) {
+.vector {
   left: 50%;
   top: 50%;
   transform: translateX(-50%) translateY(-50%);
@@ -64,7 +64,8 @@ module.exports = {
   saveFileFromFetch,
   loadImageToDisk,
   loadImageFromImagesToDisk,
-  loadImageFromRefImagesToDisk
+  loadImageFromRefImagesToDisk,
+  saveSvgToDisk
 };
 
 function typeFactoryDefault({ props }) {
@@ -517,7 +518,7 @@ function paintsRequireRender(paints) {
 }
 
 function preprocessTree(node, shared) {
-  const { vectorMap, imageMap } = shared;
+  const { vectorMap, imageMap, options } = shared;
 
   let vectorsOnly = node.name.charAt(0) !== '#';
   // let vectorVConstraint = null;
@@ -550,7 +551,9 @@ function preprocessTree(node, shared) {
   }
   node.children = children;
 
-  if (children && children.length > 0 && vectorsOnly) {
+  const props = getElementParams(node.name, options);
+
+  if ((children && children.length > 0 && vectorsOnly) || Object.keys(props).includes('vector')) {
     node.type = 'VECTOR';
     // node.constraints = {
     //   vertical: vectorVConstraint,
@@ -793,6 +796,18 @@ async function saveFileFromFetch(res, path) {
       resolve();
     });
   });
+}
+
+async function saveSvgToDisk(fileName, content, { options }) {
+  fileName += '.svg';
+
+  if (options.makeDir) {
+    await makeDir(options.imageDir);
+  }
+
+  fs.writeFileSync(fsPath.resolve(options.imageDir, fileName), content);
+
+  return `${options.imageUrlPrefix}${fileName}`;
 }
 
 async function loadImageToDisk(url, fileName, { options, headers }) {
