@@ -17,11 +17,12 @@ input {
 input:focus {
   outline: none;
 }
-.vector :global(svg) {
+.vector {
   left: 50%;
   top: 50%;
   transform: translateX(-50%) translateY(-50%);
   position: absolute;
+  overflow: visible !important;
 }`;
 
 module.exports = {
@@ -63,7 +64,8 @@ module.exports = {
   saveFileFromFetch,
   loadImageToDisk,
   loadImageFromImagesToDisk,
-  loadImageFromRefImagesToDisk
+  loadImageFromRefImagesToDisk,
+  saveSvgToDisk
 };
 
 function typeFactoryDefault({ props }) {
@@ -360,23 +362,27 @@ function emptyChildren({ content, minChildren, centerChildren, maxChildren }) {
 async function renderChildren({ node, minChildren, centerChildren, maxChildren }, shared) {
   let first = true;
 
+  let prev = null;
   for (const child of minChildren) {
-    await visitNode(shared, child, node, !first);
+    await visitNode(shared, child, prev, node, !first);
     first = false;
+    prev = child;
   }
 
   for (const child of centerChildren) {
-    await visitNode(shared, child, node);
+    await visitNode(shared, child, prev, node);
+    prev = child;
   }
 
   first = true;
   for (const child of maxChildren) {
-    await visitNode(shared, child, node, !first);
+    await visitNode(shared, child, prev, node, !first);
     first = false;
+    prev = child;
   }
 }
 
-async function visitNode(shared, node, parent = null, notFirst = false) {
+async function visitNode(shared, node, prev = null, parent = null, notFirst = false) {
   const { print, preprint, options } = shared;
 
   const nodeProps = {};
@@ -405,6 +411,7 @@ async function visitNode(shared, node, parent = null, notFirst = false) {
   const state = {
     classNames,
     node,
+    prev,
     props,
     increaseDivCounter,
     decreaseDivCounter,
@@ -419,6 +426,8 @@ async function visitNode(shared, node, parent = null, notFirst = false) {
     content,
     nodeProps
   };
+
+  node.state = state;
 
   expandChildren(node, parent, minChildren, maxChildren, centerChildren, 0);
 
@@ -509,40 +518,47 @@ function paintsRequireRender(paints) {
 }
 
 function preprocessTree(node, shared) {
-  const { vectorMap, imageMap } = shared;
+  const { vectorMap, imageMap, options } = shared;
+
+  const props = getElementParams(node.name, options);
 
   let vectorsOnly = node.name.charAt(0) !== '#';
-  let vectorVConstraint = null;
-  let vectorHConstraint = null;
+  // let vectorVConstraint = null;
+  // let vectorHConstraint = null;
 
-  if (
-    paintsRequireRender(node.fills) ||
-    paintsRequireRender(node.strokes) ||
-    (node.blendMode != null && ['PASS_THROUGH', 'NORMAL'].indexOf(node.blendMode) < 0)
-  ) {
-    node.type = 'VECTOR';
-  }
+  // if (
+  //   paintsRequireRender(node.fills) ||
+  //   paintsRequireRender(node.strokes) ||
+  //   (node.blendMode != null && !['PASS_THROUGH', 'NORMAL'].includes(node.blendMode)))
+  // ) {
+  //   node.type = 'VECTOR';
+  // }
 
   const children = node.children && node.children.filter(child => child.visible !== false);
   if (children) {
     for (let j = 0; j < children.length; j++) {
-      if (VECTOR_TYPES.indexOf(children[j].type) < 0) vectorsOnly = false;
-      else {
-        if (vectorVConstraint != null && children[j].constraints.vertical != vectorVConstraint) vectorsOnly = false;
-        if (vectorHConstraint != null && children[j].constraints.horizontal != vectorHConstraint) vectorsOnly = false;
-        vectorVConstraint = children[j].constraints.vertical;
-        vectorHConstraint = children[j].constraints.horizontal;
+      if (!VECTOR_TYPES.includes(children[j].type)) {
+        vectorsOnly = false;
+      } else {
+        // if (vectorVConstraint != null && children[j].constraints.vertical != vectorVConstraint) {
+        //   vectorsOnly = false;
+        // }
+        // if (vectorHConstraint != null && children[j].constraints.horizontal != vectorHConstraint) {
+        //   vectorsOnly = false;
+        // }
+        // vectorVConstraint = children[j].constraints.vertical;
+        // vectorHConstraint = children[j].constraints.horizontal;
       }
     }
   }
   node.children = children;
 
-  if (children && children.length > 0 && vectorsOnly) {
+  if ((children && children.length > 0 && vectorsOnly) || Object.keys(props).includes('vector')) {
     node.type = 'VECTOR';
-    node.constraints = {
-      vertical: vectorVConstraint,
-      horizontal: vectorHConstraint
-    };
+    // node.constraints = {
+    //   vertical: vectorVConstraint,
+    //   horizontal: vectorHConstraint
+    // };
   }
 
   if (VECTOR_TYPES.includes(node.type)) {
@@ -780,6 +796,18 @@ async function saveFileFromFetch(res, path) {
       resolve();
     });
   });
+}
+
+async function saveSvgToDisk(fileName, content, { options }) {
+  fileName += '.svg';
+
+  if (options.makeDir) {
+    await makeDir(options.imageDir);
+  }
+
+  fs.writeFileSync(fsPath.resolve(options.imageDir, fileName), content);
+
+  return `${options.imageUrlPrefix}${fileName}`;
 }
 
 async function loadImageToDisk(url, fileName, { options, headers }) {

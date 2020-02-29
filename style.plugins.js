@@ -7,9 +7,11 @@ const {
   paintToLinearGradient,
   paintToRadialGradient,
   applyFontStyle,
+  loadImageToDisk,
   loadImageFromImagesToDisk,
   loadImageFromRefImagesToDisk
 } = require('./lib');
+const { loadListImages } = require('./api');
 
 const stylePlugins = [
   setMiddleOrder,
@@ -18,6 +20,7 @@ const stylePlugins = [
   setVerticalAlign,
   setHorizontalLayout,
   setFrameStyles,
+  renderMask,
   setTextRenderer
 ];
 
@@ -29,6 +32,7 @@ module.exports = {
   setVerticalAlign,
   setHorizontalLayout,
   setFrameStyles,
+  renderMask,
   setTextRenderer
 };
 
@@ -60,6 +64,7 @@ function setHorizontalAlign({ node, middleStyle, outerStyle, bounds }) {
       outerStyle.pointerEvents = 'none';
       outerStyle.justifyContent = 'stretch';
       if (bounds != null) {
+        middleStyle.width = bounds.width;
         middleStyle.marginLeft = bounds.left;
         middleStyle.marginRight = bounds.right;
         middleStyle.flexGrow = 1;
@@ -74,7 +79,10 @@ function setHorizontalAlign({ node, middleStyle, outerStyle, bounds }) {
     if (bounds != null) {
       middleStyle.marginRight = bounds.right;
       middleStyle.width = bounds.width;
-      middleStyle.minWidth = bounds.width;
+      middleStyle.minWidth = middleStyle.width;
+      if (node.clipsContent) {
+        middleStyle.maxWidth = middleStyle.width;
+      }
     }
   } else if (cHorizontal === 'CENTER') {
     outerStyle.position = 'relative';
@@ -85,6 +93,10 @@ function setHorizontalAlign({ node, middleStyle, outerStyle, bounds }) {
     if (bounds != null) {
       middleStyle.width = bounds.width;
       middleStyle.marginLeft = bounds.left && bounds.right ? bounds.left - bounds.right : null;
+      if (node.clipsContent) {
+        middleStyle.minWidth = middleStyle.width;
+        middleStyle.maxWidth = middleStyle.width;
+      }
     }
   } else if (cHorizontal === 'SCALE') {
     outerStyle.position = 'relative';
@@ -96,14 +108,22 @@ function setHorizontalAlign({ node, middleStyle, outerStyle, bounds }) {
       const parentWidth = bounds.left + bounds.width + bounds.right;
       middleStyle.width = `${(bounds.width * 100) / parentWidth}%`;
       middleStyle.marginLeft = `${(bounds.left * 100) / parentWidth}%`;
+      middleStyle.marginRight = `${(bounds.right * 100) / parentWidth}%`;
+      if (node.clipsContent) {
+        middleStyle.minWidth = middleStyle.width;
+        middleStyle.maxWidth = middleStyle.width;
+      }
     }
-  } else {
+  } else if (cHorizontal === 'LEFT') {
     if (bounds != null) {
       outerStyle.position = 'relative';
       outerStyle.display = 'flex';
       middleStyle.marginLeft = bounds.left;
-      middleStyle.width = bounds.width;
-      middleStyle.minWidth = bounds.width;
+      middleStyle.minWidth = middleStyle.width;
+      if (node.clipsContent) {
+        middleStyle.maxWidth = middleStyle.width;
+      }
+      middleStyle.width = null;
     }
   }
 }
@@ -111,7 +131,7 @@ function setHorizontalAlign({ node, middleStyle, outerStyle, bounds }) {
 function setVerticalAlign({ node, middleStyle, outerStyle, bounds }) {
   const cVertical = node.constraints && node.constraints.vertical;
   middleStyle.debugV = cVertical;
-  if (bounds && bounds.height && cVertical !== 'TOP_BOTTOM') {
+  if (bounds && bounds.height && cVertical !== 'TOP_BOTTOM' && cVertical !== 'SCALE') {
     middleStyle.height = bounds.height;
   }
   if (cVertical === 'TOP_BOTTOM') {
@@ -141,6 +161,10 @@ function setVerticalAlign({ node, middleStyle, outerStyle, bounds }) {
     if (bounds != null) {
       middleStyle.position = 'relative';
       middleStyle.marginTop = bounds.top - bounds.bottom;
+      if (node.clipsContent) {
+        middleStyle.minHeight = middleStyle.height;
+        middleStyle.maxHeight = bounds.width;
+      }
     }
   } else if (cVertical === 'SCALE') {
     outerStyle.position = 'relative';
@@ -157,6 +181,11 @@ function setVerticalAlign({ node, middleStyle, outerStyle, bounds }) {
       const parentHeight = bounds.top + bounds.height + bounds.bottom;
       middleStyle.height = `${(bounds.height * 100) / parentHeight}%`;
       middleStyle.top = `${(bounds.top * 100) / parentHeight}%`;
+      middleStyle.bottom = `${(bounds.bottom * 100) / parentHeight}%`;
+      if (node.clipsContent) {
+        middleStyle.minHeight = middleStyle.height;
+        middleStyle.maxHeight = middleStyle.height;
+      }
     }
   } else if (cVertical === 'BOTTOM') {
     outerStyle.width = '100%';
@@ -169,8 +198,12 @@ function setVerticalAlign({ node, middleStyle, outerStyle, bounds }) {
     if (bounds != null) {
       middleStyle.position = 'relative';
       middleStyle.marginBottom = bounds.bottom;
+      middleStyle.minHeight = middleStyle.height;
+      if (node.clipsContent) {
+        middleStyle.maxHeight = middleStyle.height;
+      }
     }
-  } else {
+  } else if (cVertical === 'TOP') {
     if (bounds != null) {
       outerStyle.position = 'relative';
       outerStyle.display = 'flex';
@@ -178,6 +211,9 @@ function setVerticalAlign({ node, middleStyle, outerStyle, bounds }) {
       middleStyle.marginTop = bounds.top;
       middleStyle.marginBottom = bounds.bottom;
       middleStyle.minHeight = middleStyle.height;
+      if (node.clipsContent) {
+        middleStyle.maxHeight = middleStyle.height;
+      }
       middleStyle.height = null;
     }
   }
@@ -216,7 +252,7 @@ function setHorizontalLayout({ node, middleStyle, innerStyle, parent, classNames
 
 async function setFrameStyles(state, shared) {
   const { refImages, images, genClassName, additionalStyles } = shared;
-  const { node, middleStyle, props, bounds, classNames } = state;
+  const { node, parent, middleStyle, props, bounds, classNames } = state;
 
   const addBackground = (value, size) => {
     middleStyle.background = `${middleStyle.background ? `${middleStyle.background}, ` : ''}${value}`;
@@ -244,22 +280,23 @@ async function setFrameStyles(state, shared) {
       const url = `url(${await loadImageFromImagesToDisk(node, shared)})`;
 
       if (bounds && Math.abs(bounds.angle) > 0) {
+        const left = (parent.absoluteBoundingBox.width - bounds.width) / 2 / bounds.width;
+        const top = (parent.absoluteBoundingBox.height - bounds.height) / 2 / bounds.height;
+
         const afterId = genClassName();
         classNames.push(afterId);
         additionalStyles.push(`
           .${afterId}::after {
             position: absolute;
             pointer-events: none;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            right: 0;
-            height: 100%;
-            width: 100%;
+            left: -${left * 100}%;
+            right: -${left * 100}%;
+            top: -${top * 100}%;
+            bottom: -${top * 100}%;
             content: '';
             background: ${url} center center no-repeat;
-            background-size: cover;
-            ${bounds && Math.abs(bounds.angle) > 0 ? `transform: rotate(${bounds.angle}deg);` : ''}
+            background-size: contain;
+            transform: rotate(${bounds.angle}deg);
             transform-origin: 50% 50%;
           }
         `);
@@ -298,37 +335,35 @@ async function setFrameStyles(state, shared) {
       }
     }
 
-    if (node.effects) {
-      for (let i = 0; i < node.effects.length; i++) {
-        const effect = node.effects[i];
+    const addValue = (name, value) => {
+      middleStyle[name] = `${middleStyle[name] ? `${middleStyle[name]}, ` : ''}${value}`;
+    };
 
+    if (node.effects) {
+      for (let effect of node.effects) {
         if (effect.visible === false) {
           continue;
         }
 
-        const prevFilter = `${middleStyle.filter ? ', ' : ''}`;
-        const prevBoxShadow = `${middleStyle.boxShadow ? ', ' : ''}`;
-        const prevBackdropFilter = `${middleStyle.backdropFilter ? ', ' : ''}`;
-
         if (effect.type === 'DROP_SHADOW') {
           if (Object.keys(props).includes('filterShadow')) {
-            middleStyle.filter = `${prevFilter}drop-shadow(${dropShadow(effect)})`;
+            addValue('filter', `drop-shadow(${dropShadow(effect)})`);
           } else {
-            middleStyle.boxShadow = `${prevBoxShadow}${dropShadow(effect)}`;
+            addValue('boxShadow', `${dropShadow(effect)}`);
           }
         }
         if (effect.type === 'INNER_SHADOW') {
           if (Object.keys(props).includes('filterShadow')) {
-            middleStyle.filter = `${prevFilter}drop-shadow(${innerShadow(effect)})`;
+            addValue('filter', `drop-shadow(${innerShadow(effect)})`);
           } else {
-            middleStyle.boxShadow = `${prevBoxShadow}${innerShadow(effect)}`;
+            addValue('boxShadow', `${innerShadow(effect)}`);
           }
         }
         if (effect.type === 'LAYER_BLUR') {
-          middleStyle.filter = `${prevFilter}blur(${effect.radius}px)`;
+          addValue('filter', `blur(${effect.radius}px)`);
         }
         if (effect.type === 'BACKGROUND_BLUR') {
-          middleStyle.backdropFilter = `${prevBackdropFilter}blur(${effect.radius}px)`;
+          addValue('backdropFilter', `blur(${effect.radius}px)`);
         }
       }
     }
@@ -348,6 +383,25 @@ async function setFrameStyles(state, shared) {
   }
 }
 
+async function renderMask(state, shared) {
+  const { node, prev, middleStyle } = state;
+  const maskNode = (prev && prev.isMask && prev) || (prev && prev.nodeMask);
+  if (maskNode) {
+    node.nodeMask = maskNode;
+    const fileName = node.id.replace(/\W+/g, '-') + '_mask';
+    const base = await loadListImages(shared, maskNode.id, 'png', true);
+    const url = `url(${await loadImageToDisk(base[maskNode.id], fileName, shared)})`;
+    middleStyle.maskImage = url;
+    const left = maskNode.absoluteBoundingBox.x - node.absoluteBoundingBox.x;
+    const top = maskNode.absoluteBoundingBox.y - node.absoluteBoundingBox.y;
+    const width = maskNode.absoluteBoundingBox.width;
+    const height = maskNode.absoluteBoundingBox.height;
+    middleStyle.maskPosition = `${left}px ${top}px`;
+    middleStyle.maskMode = 'luminance';
+    middleStyle.maskSize = `${width}px ${height}px`;
+  }
+}
+
 function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) {
   if (node.type === 'TEXT') {
     const lastFill = getPaint(node.fills);
@@ -364,16 +418,21 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
     const fontStyle = node.style;
     applyFontStyle(middleStyle, fontStyle);
 
-    middleStyle.display = 'flex';
-    middleStyle.maxWidth = '-webkit-fill-available';
-    middleStyle.alignContent = 'flex-start';
+    const makeItFlex = () => {
+      middleStyle.display = 'flex';
+      middleStyle.maxWidth = '-webkit-fill-available';
+      middleStyle.alignContent = 'flex-start';
+    };
 
     if (fontStyle.textAlignHorizontal === 'CENTER') {
       middleStyle.justifyContent = 'center';
+      middleStyle.textAlign = 'center';
     } else if (fontStyle.textAlignHorizontal === 'LEFT') {
       middleStyle.justifyContent = 'flex-start';
+      middleStyle.textAlign = 'left';
     } else if (fontStyle.textAlignHorizontal === 'RIGHT') {
       middleStyle.justifyContent = 'flex-end';
+      middleStyle.textAlign = 'right';
     }
 
     if (fontStyle.textAlignVertical === 'CENTER') {
@@ -390,6 +449,10 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
       middleStyle.alignContent = 'flex-end';
     }
 
+    const addValue = (name, value) => {
+      middleStyle[name] = `${middleStyle[name] ? `${middleStyle[name]}, ` : ''}${value}`;
+    };
+
     if (node.effects) {
       for (let i = 0; i < node.effects.length; i++) {
         const effect = node.effects[i];
@@ -398,114 +461,132 @@ function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) 
           continue;
         }
 
-        const prevFilter = `${middleStyle.filter ? ', ' : ''}`;
-        const prevBoxShadow = `${middleStyle.boxShadow ? ', ' : ''}`;
-
         if (effect.type === 'DROP_SHADOW') {
           if (Object.keys(props).includes('filterShadow')) {
-            middleStyle.filter = `${prevFilter}drop-shadow(${dropShadow(effect)})`;
+            addValue('filter', `drop-shadow(${dropShadow(effect)})`);
           } else {
-            middleStyle.textShadow = `${prevBoxShadow}${dropShadow(effect)}`;
+            addValue('textShadow', dropShadow(effect));
           }
         }
         if (effect.type === 'INNER_SHADOW') {
           if (Object.keys(props).includes('filterShadow')) {
-            middleStyle.filter = `${prevFilter}drop-shadow(${innerShadow(effect)})`;
+            addValue('filter', `drop-shadow(${innerShadow(effect)})`);
           } else {
-            middleStyle.textShadow = `${prevBoxShadow}${innerShadow(effect)}`;
+            addValue('textShadow', innerShadow(effect));
           }
         }
       }
     }
 
     if (Object.keys(props).includes('input')) {
+      makeItFlex();
       const inputId = printStyle({
         flex: 1,
         height: '100%'
       });
       content.push(
-        `<input key="${node.id}" className="${inputId}" type="${props.input || 'text'}" placeholder="${
-          node.characters
-        }" name="${node.name.substring(7)}" />`
+        `<input
+        key="${node.id}"
+        className="${inputId}"
+        type="${props.input || 'text'}" placeholder="${node.characters}" name="${node.name.substring(7)}" />`
       );
     } else {
       let para = '';
       const styleCache = {};
       let currStyle = 0;
       let currStyleIndex = 0;
+      let nextLineCounter = 0;
+      let nextLineIndicator = false;
 
       const maxCurrStyle = Object.keys(node.styleOverrideTable)
         .map(s => Number.parseInt(s, 10))
         .reduce((key, max) => (key > max ? key : max), 0);
 
       const commitParagraph = key => {
-        if (para !== '') {
-          if (styleCache[currStyle] == null) {
-            styleCache[currStyle] = {};
-          }
+        if (styleCache[currStyle] == null) {
+          styleCache[currStyle] = {};
+        }
 
-          if (node.styleOverrideTable[currStyle] && node.styleOverrideTable[currStyle].fills) {
-            const lastFill = getPaint(node.styleOverrideTable[currStyle].fills);
-            if (lastFill) {
-              if (lastFill.type === 'SOLID') {
-                styleCache[currStyle].color = colorString(lastFill.color);
-                middleStyle.opacity = lastFill.opacity;
-              }
+        if (node.styleOverrideTable[currStyle] && node.styleOverrideTable[currStyle].fills) {
+          const lastFill = getPaint(node.styleOverrideTable[currStyle].fills);
+          if (lastFill) {
+            if (lastFill.type === 'SOLID') {
+              styleCache[currStyle].color = colorString(lastFill.color);
+              middleStyle.opacity = lastFill.opacity;
             }
           }
-
-          applyFontStyle(styleCache[currStyle], node.styleOverrideTable[currStyle]);
-
-          if (
-            (Object.keys(props).includes('ellipsis') && props.ellipsis == null) ||
-            (props.ellipsis &&
-              props.ellipsis
-                .split(',')
-                .map(s => Number.parseInt(s, 10))
-                .includes(currStyleIndex))
-          ) {
-            styleCache[currStyle].overflow = 'hidden';
-            styleCache[currStyle].textOverflow = 'ellipsis';
-          }
-
-          if (Object.keys(props).includes('ellipsisFlex') && maxCurrStyle === currStyle) {
-            styleCache[currStyle].flex = 1;
-          }
-
-          const id = printStyle(styleCache[currStyle]);
-
-          if (id) content.push(`<span className="${id}" key="${key}">${para}</span>`);
-          else content.push(`<span key="${key}">${para}</span>`);
-
-          para = '';
-          currStyleIndex++;
         }
+
+        applyFontStyle(styleCache[currStyle], node.styleOverrideTable[currStyle]);
+
+        if (
+          (Object.keys(props).includes('ellipsis') && props.ellipsis == null) ||
+          (props.ellipsis &&
+            props.ellipsis
+              .split(',')
+              .map(s => Number.parseInt(s, 10))
+              .includes(currStyleIndex))
+        ) {
+          styleCache[currStyle].overflow = 'hidden';
+          styleCache[currStyle].textOverflow = 'ellipsis';
+          makeItFlex();
+        }
+
+        if (Object.keys(props).includes('ellipsisFlex') && maxCurrStyle === currStyle) {
+          styleCache[currStyle].flex = 1;
+        }
+
+        if (Object.keys(props).includes('ellipsisWrap') && maxCurrStyle === currStyle) {
+          middleStyle.flexWrap = 'wrap';
+        }
+
+        const id = printStyle(styleCache[currStyle]);
+
+        para = para.replace(/\"/g, '\\"');
+        const spaceBefore = Array(para.length - para.trimLeft().length)
+          .fill('&nbsp;')
+          .join('');
+        const spaceAfter = Array(para.length - para.trimRight().length)
+          .fill('&nbsp;')
+          .join('');
+        para = para.trim();
+
+        const br = Array(nextLineCounter)
+          .fill('<br/>')
+          .join('');
+
+        if (id) content.push(`<span className="${id}" key="${key}">${spaceBefore}{\`${para}\`}${spaceAfter}${br}</span>`);
+        else content.push(`<span key="${key}">${spaceBefore}{\`${para}\`}${spaceAfter}${br}</span>`);
+
+        para = '';
+        currStyleIndex++;
+
+        nextLineCounter = 0;
+        nextLineIndicator = false;
       };
 
       for (const i in node.characters) {
         let idx = node.characterStyleOverrides && node.characterStyleOverrides[i];
+        const char = node.characters[i];
 
-        if (node.characters[i] === '\n') {
+        if (nextLineIndicator && node.characters[i] !== '\n') {
           commitParagraph(i);
+          para += char;
+        } else if (node.characters[i] === '\n') {
+          nextLineIndicator = true;
+          nextLineCounter++;
+        } else {
+          if (idx == null) {
+            idx = 0;
+          }
 
-          const id = printStyle({
-            flex: 1,
-            content: '""',
-            minWidth: '-webkit-fill-available'
-          });
+          if (idx !== currStyle) {
+            commitParagraph(i);
+            currStyle = idx;
+          }
 
-          content.push(`<br className="${id}" key="${`br${i}`}" />`);
-          middleStyle.flexWrap = 'wrap';
-          continue;
+          para += char;
         }
-
-        if (idx == null) idx = 0;
-        if (idx !== currStyle) {
-          commitParagraph(i);
-          currStyle = idx;
-        }
-
-        para += node.characters[i];
       }
       commitParagraph('end');
     }
