@@ -1,4 +1,5 @@
 const { emptyChildren, getComponentName, createComponent, getDescriptionStyles, saveSvgToDisk } = require('./lib');
+const svgtojsx = require('svg-to-jsx');
 
 const contentPlugins = [
   applyStyles,
@@ -57,7 +58,7 @@ function renderMask(state) {
 
 async function renderVector(state, shared) {
   const { vectors, genClassName, additionalStyles } = shared;
-  const { node, content } = state;
+  const { node, props, content } = state;
   if (node.type === 'VECTOR' && vectors[node.id] && !node.isMask) {
     emptyChildren(state);
 
@@ -86,10 +87,15 @@ async function renderVector(state, shared) {
       additionalStyles.push(additionalSvgStyles);
     }
 
-    const fileName = node.id.replace(/\W+/g, '-');
-    const url = await saveSvgToDisk(fileName, vectors[node.id], shared);
-
-    content.push(`<img className='vector ${currentClass}' src='${url}' />`);
+    if (Object.keys(props).includes('vectorImg')) {
+      const fileName = node.id.replace(/\W+/g, '-');
+      const url = await saveSvgToDisk(fileName, vectors[node.id], shared);
+      content.push(`<img className='vector ${currentClass}' src='${url}' />`);
+    } else {
+      let svg = await svgtojsx(vectors[node.id]);
+      svg = svg.replace('<svg', `<svg className='vector ${currentClass}'`);
+      content.push(svg);
+    }
   }
 }
 
