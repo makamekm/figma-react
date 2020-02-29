@@ -22,6 +22,7 @@ input:focus {
   top: 50%;
   transform: translateX(-50%) translateY(-50%);
   position: absolute;
+  overflow: visible !important;
 }`;
 
 module.exports = {
@@ -512,8 +513,8 @@ function preprocessTree(node, shared) {
   const { vectorMap, imageMap } = shared;
 
   let vectorsOnly = node.name.charAt(0) !== '#';
-  let vectorVConstraint = null;
-  let vectorHConstraint = null;
+  // let vectorVConstraint = null;
+  // let vectorHConstraint = null;
 
   // if (
   //   paintsRequireRender(node.fills) ||
@@ -526,12 +527,17 @@ function preprocessTree(node, shared) {
   const children = node.children && node.children.filter(child => child.visible !== false);
   if (children) {
     for (let j = 0; j < children.length; j++) {
-      if (VECTOR_TYPES.indexOf(children[j].type) < 0) vectorsOnly = false;
-      else {
-        if (vectorVConstraint != null && children[j].constraints.vertical != vectorVConstraint) vectorsOnly = false;
-        if (vectorHConstraint != null && children[j].constraints.horizontal != vectorHConstraint) vectorsOnly = false;
-        vectorVConstraint = children[j].constraints.vertical;
-        vectorHConstraint = children[j].constraints.horizontal;
+      if (!VECTOR_TYPES.includes(children[j].type)) {
+        vectorsOnly = false;
+      } else {
+        // if (vectorVConstraint != null && children[j].constraints.vertical != vectorVConstraint) {
+        //   vectorsOnly = false;
+        // }
+        // if (vectorHConstraint != null && children[j].constraints.horizontal != vectorHConstraint) {
+        //   vectorsOnly = false;
+        // }
+        // vectorVConstraint = children[j].constraints.vertical;
+        // vectorHConstraint = children[j].constraints.horizontal;
       }
     }
   }

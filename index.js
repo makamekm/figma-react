@@ -52,8 +52,8 @@ async function runFigmaReact(options = {}) {
   const canvas = await loadCanvas(fileKey, headers);
 
   // Debug
-  // const fs = require('fs');
-  // fs.writeFileSync('./temp.json', JSON.stringify(canvas, null, 4));
+  const fs = require('fs');
+  fs.writeFileSync('./temp.json', JSON.stringify(canvas, null, 4));
 
   // Wrap vectors and images
   preprocessCanvasComponents(canvas, shared);

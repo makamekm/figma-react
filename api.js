@@ -1,4 +1,5 @@
 const fetch = require('node-fetch');
+const { colorString } = require('./lib');
 
 const baseUrl = 'https://api.figma.com';
 
@@ -19,8 +20,8 @@ function getHeaders(devToken) {
 }
 
 async function loadCanvas(fileKey, headers) {
-  let resp = await fetch(`${baseUrl}/v1/files/${fileKey}?geometry=paths`, { headers });
-  let data = await resp.json();
+  const resp = await fetch(`${baseUrl}/v1/files/${fileKey}?geometry=paths`, { headers });
+  const data = await resp.json();
   const document = data.document;
   if (data.err) {
     throw new Error(data.err);
@@ -31,8 +32,8 @@ async function loadCanvas(fileKey, headers) {
 
 async function loadNodes(ids, fileKey, headers) {
   if (ids.length > 0) {
-    let resp = await fetch(`${baseUrl}/v1/files/${fileKey}/nodes?geometry=paths&ids=${ids.join(',')}`, { headers });
-    let data = await resp.json();
+    const resp = await fetch(`${baseUrl}/v1/files/${fileKey}/nodes?geometry=paths&ids=${ids.join(',')}`, { headers });
+    const data = await resp.json();
     if (data.err) {
       throw new Error(data.err);
     }
@@ -73,7 +74,7 @@ async function loadRefImages({ fileKey, headers }) {
 
 async function loadVectorListImages({ vectorMap, fileKey, headers }) {
   const guids = Object.keys(vectorMap).join(',');
-  const resp = await fetch(`${baseUrl}/v1/images/${fileKey}?ids=${guids}&format=svg`, { headers });
+  const resp = await fetch(`${baseUrl}/v1/images/${fileKey}?ids=${guids}&format=svg&use_absolute_bounds=true`, { headers });
   const data = await resp.json();
   if (data.err) {
     throw new Error(data.err);
@@ -82,12 +83,12 @@ async function loadVectorListImages({ vectorMap, fileKey, headers }) {
 }
 
 async function loadVectors(shared) {
-  const { headers } = shared;
+  const { headers, vectorMap } = shared;
 
   const vectors = await loadVectorListImages(shared);
 
   let promises = [];
-  let guids = [];
+  const guids = [];
 
   for (const guid in vectors) {
     if (vectors[guid] == null) continue;
@@ -104,6 +105,28 @@ async function loadVectors(shared) {
   responses = await Promise.all(promises);
   for (let i = 0; i < responses.length; i++) {
     vectors[guids[i]] = responses[i].replace('<svg ', '<svg preserveAspectRatio="none" ');
+  }
+
+  for (const guid in vectorMap) {
+    if (!vectors[guid]) {
+      const node = vectorMap[guid];
+      let svg = '<svg preserveAspectRatio="none">';
+      let color = '#ffffff';
+      if (node.fills && node.fills.length > 0) {
+        for (const fill of node.fills) {
+          if (fill.type === 'SOLID') {
+            color = colorString(fill.color);
+          }
+        }
+      }
+      if (node.fillGeometry && node.fillGeometry.length > 0) {
+        for (const fill of node.fillGeometry) {
+          svg += `<path d="${fill.path}" fill="${color}"></path>`;
+        }
+      }
+      svg += '</svg>';
+      vectors[guid] = svg;
+    }
   }
 
   return vectors;
