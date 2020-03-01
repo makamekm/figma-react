@@ -276,7 +276,7 @@ async function setFrameStyles(state, shared) {
       addBackground(`linear-gradient(to bottom, ${color} 0%, ${color} 100%)`);
     }
 
-    if (images[node.id] != null && !Object.keys(props).includes('generateBG')) {
+    if (images[node.id] != null && !Object.keys(props).includes('gbg')) {
       const url = `url(${await loadImageFromImagesToDisk(node, shared)})`;
 
       if (bounds && Math.abs(bounds.angle) > 0) {
