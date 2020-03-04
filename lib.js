@@ -535,6 +535,7 @@ function preprocessTree(node, shared) {
   // }
 
   const children = node.children && node.children.filter(child => child.visible !== false);
+
   if (children) {
     for (let j = 0; j < children.length; j++) {
       if (!VECTOR_TYPES.includes(children[j].type)) {

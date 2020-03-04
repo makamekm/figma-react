@@ -279,9 +279,10 @@ async function setFrameStyles(state, shared) {
     if (images[node.id] != null && !Object.keys(props).includes('gbg')) {
       const url = `url(${await loadImageFromImagesToDisk(node, shared)})`;
 
-      if (bounds && Math.abs(bounds.angle) > 0) {
-        const left = (parent.absoluteBoundingBox.width - bounds.width) / 2 / bounds.width;
-        const top = (parent.absoluteBoundingBox.height - bounds.height) / 2 / bounds.height;
+      if (bounds && Math.abs(bounds.angle)) {
+        middleStyle.display = 'flex';
+        middleStyle.justifyContent = 'center';
+        middleStyle.alignItems = 'center';
 
         const afterId = genClassName();
         classNames.push(afterId);
@@ -289,13 +290,11 @@ async function setFrameStyles(state, shared) {
           .${afterId}::after {
             position: absolute;
             pointer-events: none;
-            left: -${left * 100}%;
-            right: -${left * 100}%;
-            top: -${top * 100}%;
-            bottom: -${top * 100}%;
+            width: ${(node.absoluteBoundingBox.width / bounds.width) * 100}%;
+            height: ${(node.absoluteBoundingBox.height / bounds.height) * 100}%;
             content: '';
             background: ${url} center center no-repeat;
-            background-size: contain;
+            background-size: cover;
             transform: rotate(${bounds.angle}deg);
             transform-origin: 50% 50%;
           }
