@@ -290,8 +290,8 @@ async function setFrameStyles(state, shared) {
           .${afterId}::after {
             position: absolute;
             pointer-events: none;
-            width: ${node.absoluteBoundingBox.width / bounds.width * 100}%;
-            height: ${node.absoluteBoundingBox.height / bounds.height * 100}%;
+            width: ${(node.absoluteBoundingBox.width / bounds.width) * 100}%;
+            height: ${(node.absoluteBoundingBox.height / bounds.height) * 100}%;
             content: '';
             background: ${url} center center no-repeat;
             background-size: cover;
