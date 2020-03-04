@@ -288,6 +288,7 @@ async function setFrameStyles(state, shared) {
         classNames.push(afterId);
         additionalStyles.push(`
           .${afterId}::after {
+            position: absolute;
             pointer-events: none;
             width: ${node.absoluteBoundingBox.width / bounds.width * 100}%;
             height: ${node.absoluteBoundingBox.height / bounds.height * 100}%;
