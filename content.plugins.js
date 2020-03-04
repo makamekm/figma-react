@@ -1,5 +1,5 @@
 const { emptyChildren, getComponentName, createComponent, getDescriptionStyles, saveSvgToDisk } = require('./lib');
-const svgtojsx = require('svg-to-jsx');
+const svgtojsx = require('./svg-to-jsx');
 
 const contentPlugins = [
   applyStyles,
