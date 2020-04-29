@@ -65,7 +65,8 @@ module.exports = {
   loadImageToDisk,
   loadImageFromImagesToDisk,
   loadImageFromRefImagesToDisk,
-  saveSvgToDisk
+  saveSvgToDisk,
+  clearObject
 };
 
 function typeFactoryDefault({ props }) {
@@ -843,4 +844,12 @@ async function loadImageFromRefImagesToDisk(imageRef, shared) {
   const { refImages } = shared;
   const fileName = imageRef.replace(/\W+/g, '-');
   return loadImageToDisk(refImages[imageRef], fileName, shared);
+}
+
+function clearObject(obj) {
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      delete obj[key];
+    }
+  }
 }

@@ -8,7 +8,8 @@ const {
   getPaint,
   applyFontStyle,
   dropShadow,
-  innerShadow
+  innerShadow,
+  clearObject
 } = require('./lib');
 const svgtojsx = require('./svg-to-jsx');
 
@@ -260,6 +261,8 @@ function setTextRenderer({ node, props, middleStyle, content, nodeProps, classNa
         type="${props.input || 'text'}"
         placeholder="${node.characters}" />`
       );
+
+      clearObject(nodeProps);
     } else {
       let para = '';
       const styleCache = {};
