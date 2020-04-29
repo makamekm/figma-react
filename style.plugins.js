@@ -6,7 +6,6 @@ const {
   getPaint,
   paintToLinearGradient,
   paintToRadialGradient,
-  applyFontStyle,
   loadImageToDisk,
   loadImageFromImagesToDisk,
   loadImageFromRefImagesToDisk
@@ -20,8 +19,7 @@ const stylePlugins = [
   setVerticalAlign,
   setHorizontalLayout,
   setFrameStyles,
-  renderMask,
-  setTextRenderer
+  renderMask
 ];
 
 module.exports = {
@@ -32,8 +30,7 @@ module.exports = {
   setVerticalAlign,
   setHorizontalLayout,
   setFrameStyles,
-  renderMask,
-  setTextRenderer
+  renderMask
 };
 
 function setMiddleOrder({ node, middleStyle }) {
@@ -398,193 +395,5 @@ async function renderMask(state, shared) {
     middleStyle.maskPosition = `${left}px ${top}px`;
     middleStyle.maskMode = 'luminance';
     middleStyle.maskSize = `${width}px ${height}px`;
-  }
-}
-
-function setTextRenderer({ node, props, middleStyle, content }, { printStyle }) {
-  if (node.type === 'TEXT') {
-    const lastFill = getPaint(node.fills);
-    if (lastFill) {
-      middleStyle.color = colorString(lastFill.color);
-    }
-
-    const lastStroke = getPaint(node.strokes);
-    if (lastStroke) {
-      const weight = node.strokeWeight || 1;
-      middleStyle.WebkitTextStroke = `${weight}px ${colorString(lastStroke.color)}`;
-    }
-
-    const fontStyle = node.style;
-    applyFontStyle(middleStyle, fontStyle);
-
-    middleStyle.display = 'flex';
-    middleStyle.maxWidth = '-webkit-fill-available';
-    middleStyle.alignContent = 'flex-start';
-
-    if (fontStyle.textAlignHorizontal === 'CENTER') {
-      middleStyle.justifyContent = 'center';
-      middleStyle.textAlign = 'center';
-    } else if (fontStyle.textAlignHorizontal === 'LEFT') {
-      middleStyle.justifyContent = 'flex-start';
-      middleStyle.textAlign = 'left';
-    } else if (fontStyle.textAlignHorizontal === 'RIGHT') {
-      middleStyle.justifyContent = 'flex-end';
-      middleStyle.textAlign = 'right';
-    }
-
-    if (fontStyle.textAlignVertical === 'CENTER') {
-      middleStyle.verticalAlign = 'middle';
-      middleStyle.alignItems = 'center';
-      middleStyle.alignContent = 'center';
-    } else if (fontStyle.textAlignVertical === 'TOP') {
-      middleStyle.verticalAlign = 'top';
-      middleStyle.alignItems = 'flex-start';
-      middleStyle.alignContent = 'flex-start';
-    } else if (fontStyle.textAlignVertical === 'BOTTOM') {
-      middleStyle.verticalAlign = 'bottom';
-      middleStyle.alignItems = 'flex-end';
-      middleStyle.alignContent = 'flex-end';
-    }
-
-    const addValue = (name, value) => {
-      middleStyle[name] = `${middleStyle[name] ? `${middleStyle[name]}, ` : ''}${value}`;
-    };
-
-    if (node.effects) {
-      for (let i = 0; i < node.effects.length; i++) {
-        const effect = node.effects[i];
-
-        if (effect.visible === false) {
-          continue;
-        }
-
-        if (effect.type === 'DROP_SHADOW') {
-          if (Object.keys(props).includes('filterShadow')) {
-            addValue('filter', `drop-shadow(${dropShadow(effect)})`);
-          } else {
-            addValue('textShadow', dropShadow(effect));
-          }
-        }
-        if (effect.type === 'INNER_SHADOW') {
-          if (Object.keys(props).includes('filterShadow')) {
-            addValue('filter', `drop-shadow(${innerShadow(effect)})`);
-          } else {
-            addValue('textShadow', innerShadow(effect));
-          }
-        }
-      }
-    }
-
-    if (Object.keys(props).includes('input')) {
-      const inputId = printStyle({
-        flex: 1,
-        height: '100%'
-      });
-      content.push(
-        `<input
-        key="${node.id}"
-        className="${inputId}"
-        type="${props.input || 'text'}" placeholder="${node.characters}" name="${node.name.substring(7)}" />`
-      );
-    } else {
-      let para = '';
-      const styleCache = {};
-      let currStyle = 0;
-      let currStyleIndex = 0;
-
-      const maxCurrStyle = Object.keys(node.styleOverrideTable)
-        .map(s => Number.parseInt(s, 10))
-        .reduce((key, max) => (key > max ? key : max), 0);
-
-      const commitParagraph = key => {
-        if (styleCache[currStyle] == null) {
-          styleCache[currStyle] = {};
-        }
-
-        if (node.styleOverrideTable[currStyle] && node.styleOverrideTable[currStyle].fills) {
-          const lastFill = getPaint(node.styleOverrideTable[currStyle].fills);
-          if (lastFill) {
-            if (lastFill.type === 'SOLID') {
-              styleCache[currStyle].color = colorString(lastFill.color);
-              middleStyle.opacity = lastFill.opacity;
-            }
-          }
-        }
-
-        applyFontStyle(styleCache[currStyle], node.styleOverrideTable[currStyle]);
-
-        if (
-          (Object.keys(props).includes('ellipsis') && props.ellipsis == null) ||
-          (props.ellipsis &&
-            props.ellipsis
-              .split(',')
-              .map(s => Number.parseInt(s, 10))
-              .includes(currStyleIndex))
-        ) {
-          styleCache[currStyle].overflow = 'hidden';
-          styleCache[currStyle].textOverflow = 'ellipsis';
-        }
-
-        if (Object.keys(props).includes('ellipsisFlex') && maxCurrStyle === currStyle) {
-          styleCache[currStyle].flex = 1;
-        }
-
-        if (Object.keys(props).includes('ellipsisWrap') && maxCurrStyle === currStyle) {
-          middleStyle.flexWrap = 'wrap';
-        }
-
-        const id = printStyle(styleCache[currStyle]);
-
-        para = para.replace(/\"/g, '\\"');
-        const spaceBefore = Array(para.length - para.trimLeft().length)
-          .fill('&nbsp;')
-          .join('');
-        const spaceAfter = Array(para.length - para.trimRight().length)
-          .fill('&nbsp;')
-          .join('');
-        para = para.trim();
-
-        if (id) content.push(`<span className="${id}" key="${key}">${spaceBefore}{\`${para}\`}${spaceAfter}</span>`);
-        else content.push(`<span key="${key}">${spaceBefore}{\`${para}\`}${spaceAfter}</span>`);
-
-        para = '';
-        currStyleIndex++;
-      };
-
-      for (const i in node.characters) {
-        let idx = node.characterStyleOverrides && node.characterStyleOverrides[i];
-        const char = node.characters[i];
-
-        if (node.characters[i] === '\n' && node.characters[i - 1] === '\n') {
-          const id = printStyle({
-            flex: 1,
-            minWidth: '-webkit-fill-available'
-          });
-          content.push(`<div className="${id}" key="${`br${i}`}">&nbsp;</div>`);
-        } else if (node.characters[i] === '\n') {
-          commitParagraph(i);
-
-          const id = printStyle({
-            flex: 1,
-            content: '""',
-            minWidth: '-webkit-fill-available'
-          });
-          content.push(`<br className="${id}" key="${`br${i}`}" />`);
-          middleStyle.flexWrap = 'wrap';
-        } else {
-          if (idx == null) {
-            idx = 0;
-          }
-
-          if (idx !== currStyle) {
-            commitParagraph(i);
-            currStyle = idx;
-          }
-
-          para += char;
-        }
-      }
-      commitParagraph('end');
-    }
   }
 }

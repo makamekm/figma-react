@@ -65,12 +65,13 @@ module.exports = {
   loadImageToDisk,
   loadImageFromImagesToDisk,
   loadImageFromRefImagesToDisk,
-  saveSvgToDisk
+  saveSvgToDisk,
+  clearObject
 };
 
 function typeFactoryDefault({ props }) {
   return `{ ${Object.keys(props)
-    .map(key => `${key}: ${props[key] || 'any'};\n`)
+    .map(key => `${key}?: ${props[key] || 'any'};\n`)
     .join('')} }`;
 }
 
@@ -695,7 +696,7 @@ async function createComponent(component, parentShared) {
   await visitNode(shared, component);
 
   // Render props
-  const decorator = options.decorator || 'observer';
+  const decorator = options.decorator || '';
   const typeFactory = options.typeFactory || typeFactoryDefault;
   preprint(
     `export const ${instance}: React.FC<${typeFactory(shared)}> = ${decorator}(props => { ${
@@ -752,9 +753,9 @@ async function generateComponentFile({ path, instance, fileName, name }, options
     componentSrc += `import { ${instance} } from './${fileName}${options.fileAfterFix}';\n`;
     componentSrc += `\n`;
 
-    const decorator = options.decorator || 'observer';
+    const decorator = options.decorator || '';
 
-    componentSrc += `export const ${name} = ${decorator}(props => {\n`;
+    componentSrc += `export const ${name}: typeof ${instance} = ${decorator}(props => {\n`;
     componentSrc += `return <${instance} {...props} />;\n`;
     componentSrc += `});\n`;
     await writeFile(path, componentSrc, options);
@@ -843,4 +844,12 @@ async function loadImageFromRefImagesToDisk(imageRef, shared) {
   const { refImages } = shared;
   const fileName = imageRef.replace(/\W+/g, '-');
   return loadImageToDisk(refImages[imageRef], fileName, shared);
+}
+
+function clearObject(obj) {
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      delete obj[key];
+    }
+  }
 }
