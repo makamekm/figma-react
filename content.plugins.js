@@ -44,7 +44,7 @@ async function setComponentFromCache(state, shared) {
   if (node.id !== component.id && node.name.charAt(0) === '#') {
     const name = getComponentName(node.name, options);
     emptyChildren(state);
-    content.push(`<${name} {...props} nodeId='${node.id}' />`);
+    content.push(`<${name} {...props} />`);
     if (!componentMap[name]) await createComponent(node, shared);
     localComponentMap[name] = componentMap[name];
 
