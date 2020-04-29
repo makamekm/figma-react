@@ -25,6 +25,8 @@ const contentPlugins = [
   setOnClick,
   setId,
   addClassName,
+  addValue,
+  addOnChange,
   setTextRenderer
 ];
 
@@ -168,6 +170,27 @@ function addClassName(state) {
   const { props, classNames } = state;
   if (Object.keys(props).includes('class')) {
     classNames.push(props.class);
+  }
+}
+function addValue(state, { props: componentProps }) {
+  const { props, nodeProps } = state;
+  if (Object.keys(props).includes('value')) {
+    const args = props.value.split('.');
+    const value = args[0];
+    const elementType = args[1];
+    nodeProps['value'] = value;
+    componentProps[value] = `${elementType || 'any'}`;
+  }
+}
+
+function addOnChange(state, { props: componentProps }) {
+  const { props, nodeProps } = state;
+  if (Object.keys(props).includes('onChange')) {
+    const args = props.onChange.split('.');
+    const value = args[0];
+    const elementType = args[1];
+    nodeProps['onChange'] = value;
+    componentProps[value] = `React.ChangeEventHandler<${elementType || 'any'}>`;
   }
 }
 
@@ -378,5 +401,7 @@ module.exports = {
   setOnClick,
   setId,
   addClassName,
+  addValue,
+  addOnChange,
   setTextRenderer
 };
