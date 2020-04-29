@@ -16,7 +16,7 @@ function getConfig(options = {}) {
     process.exit(0);
   }
 
-  Object.assign(options, presets[presetName]);
+  Object.assign({}, presets[presetName], options);
 
   options.dir = options.dir || process.env.FIGMA_DIR;
   options.makeDir = options.makeDir == null ? !!process.env.FIGMA_MAKE_DIR : options.makeDir;
